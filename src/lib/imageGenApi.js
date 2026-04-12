@@ -1,4 +1,7 @@
-const MODEL = 'google/gemini-3.1-flash-image-preview';
+import { getOpenRouterApiKey, OPENROUTER_KEY_MISSING_MSG } from './openrouterKey';
+
+/** OpenRouter model id used for image generation (shown in UI). */
+export const IMAGE_GEN_MODEL = 'google/gemini-3.1-flash-image-preview';
 
 /**
  * Generates an image via OpenRouter using Gemini's image generation.
@@ -6,9 +9,9 @@ const MODEL = 'google/gemini-3.1-flash-image-preview';
  * @returns {Promise<string>} base64 data URL of the generated image
  */
 export async function generateImage(prompt, { signal } = {}) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error(OPENROUTER_KEY_MISSING_MSG);
   }
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -20,7 +23,7 @@ export async function generateImage(prompt, { signal } = {}) {
       'HTTP-Referer': window.location.origin,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: IMAGE_GEN_MODEL,
       messages: [{ role: 'user', content: prompt }],
       modalities: ['image', 'text'],
       image_config: { aspect_ratio: '9:16' },

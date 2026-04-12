@@ -27,7 +27,7 @@ function mergeRanges(ranges) {
  * A single interactive phone mockup with compose → preview flow.
  * @param {{ injectedPhoto: string|null, injectedTitle: string|null, injectedBody: string|null, onModeChange: function }} props
  */
-const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTitle, injectedBody, onModeChange }, ref) {
+const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTitle, injectedBody, onModeChange, onOpenApiKey }, ref) {
   const [mode, setMode] = useState('compose');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -157,7 +157,7 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
       <div className="phone-frame">
         <div className="app" ref={appRef}>
           <StatusBar />
-          <Header onBack={mode === 'preview' ? handleBack : undefined} />
+          <Header onBack={mode === 'preview' ? handleBack : undefined} onOpenApiKey={onOpenApiKey} />
           <main className="app-main">
             {mode === 'compose' ? (
               <ComposeView

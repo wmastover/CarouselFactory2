@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { buildPromptPack, parsePromptPack } from '../lib/promptPack';
 
 const IMAGE_CATEGORIES = [
   { key: 'subject', label: 'Subject' },
@@ -86,7 +87,11 @@ export default function EditPromptsModal({
   setTextOverlay,
   textPromptConfig,
   setTextPromptConfig,
+  onApplyPromptPack,
 }) {
+  const fileInputRef = useRef(null);
+  const [importError, setImportError] = useState(null);
+
   if (!open) return null;
 
   function updateImageCategory(key, newItems) {
@@ -95,6 +100,42 @@ export default function EditPromptsModal({
 
   function updateTextCategory(key, newItems) {
     setTextPromptConfig((prev) => ({ ...prev, [key]: newItems }));
+  }
+
+  function handleExportPrompts() {
+    setImportError(null);
+    const pack = buildPromptPack({ promptConfig, textOverlay, textPromptConfig });
+    const json = JSON.stringify(pack, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'carousel-factory-prompts.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportPick() {
+    setImportError(null);
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const result = parsePromptPack(text);
+      if (!result.ok) {
+        setImportError(result.error);
+        return;
+      }
+      onApplyPromptPack(result.data);
+      setImportError(null);
+    } catch {
+      setImportError('Could not read file');
+    }
   }
 
   return (
@@ -210,10 +251,34 @@ export default function EditPromptsModal({
           )}
         </div>
 
-        <div className="ep-footer">
-          <button className="ep-done-btn" onClick={onClose}>
-            Done
-          </button>
+        <div className="ep-footer ep-footer-with-transfer">
+          <div className="ep-footer-row">
+            <div className="ep-footer-actions">
+              <button type="button" className="ep-transfer-btn" onClick={handleExportPrompts}>
+                Export prompts
+              </button>
+              <button type="button" className="ep-transfer-btn" onClick={handleImportPick}>
+                Import prompts
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="ep-import-input"
+                onChange={handleImportFile}
+                aria-hidden
+                tabIndex={-1}
+              />
+            </div>
+            <button type="button" className="ep-done-btn" onClick={onClose}>
+              Done
+            </button>
+          </div>
+          {importError && (
+            <p className="ep-import-error" role="alert">
+              {importError}
+            </p>
+          )}
         </div>
       </div>
     </div>

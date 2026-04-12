@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
+import { KeyRound } from 'lucide-react';
 import JSZip from 'jszip';
 import ImageGenCard from './components/ImageGenCard';
 import TextGenCard from './components/TextGenCard';
 import SinglePhone from './components/SinglePhone';
 import EditPromptsModal from './components/EditPromptsModal';
+import ApiKeyModal from './components/ApiKeyModal';
 import { Button } from './components/ui/button';
 import { generateEntrySuggestions } from './lib/entryGenApi';
+import { getOpenRouterApiKey } from './lib/openrouterKey';
 import {
   DEFAULT_STATIC_STYLE,
   DEFAULT_SUBJECT,
@@ -95,6 +98,33 @@ export default function App() {
 
   const [editPromptsOpen, setEditPromptsOpen] = useState(false);
   const [editPromptsTab, setEditPromptsTab] = useState('images');
+  const [editPromptsMountKey, setEditPromptsMountKey] = useState(0);
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
+  const [apiKeyModalContentKey, setApiKeyModalContentKey] = useState(0);
+  const apiKeyModalWasOpenRef = useRef(false);
+
+  function openApiKeyModal() {
+    if (!apiKeyModalWasOpenRef.current) {
+      setApiKeyModalContentKey((k) => k + 1);
+    }
+    apiKeyModalWasOpenRef.current = true;
+    setApiKeyModalOpen(true);
+  }
+
+  function closeApiKeyModal() {
+    apiKeyModalWasOpenRef.current = false;
+    setApiKeyModalOpen(false);
+  }
+
+  useEffect(() => {
+    if (!getOpenRouterApiKey()) {
+      if (!apiKeyModalWasOpenRef.current) {
+        setApiKeyModalContentKey((k) => k + 1);
+      }
+      apiKeyModalWasOpenRef.current = true;
+      setApiKeyModalOpen(true);
+    }
+  }, []);
 
   // Image row
   const [selectedImgUrl, setSelectedImgUrl] = useState(null);
@@ -146,7 +176,14 @@ export default function App() {
 
   function openEditPrompts(tab) {
     setEditPromptsTab(tab);
+    setEditPromptsMountKey((k) => k + 1);
     setEditPromptsOpen(true);
+  }
+
+  function applyPromptPack({ promptConfig: nextPc, textOverlay: nextOverlay, textPromptConfig: nextTpc }) {
+    setPromptConfig(nextPc);
+    setTextOverlay(nextOverlay);
+    setTextPromptConfig(nextTpc);
   }
 
   function regenerateImageRow() {
@@ -185,6 +222,17 @@ export default function App() {
       folder.file('2-conversation.png', dataUrlToBlob(selectedConvImage));
       folder.file('3-entry.png', dataUrlToBlob(phoneScreenshot));
 
+      const selectedEntry = entrySuggestions?.[selectedEntryIndex];
+      const detailsLines = [
+        `Hook: ${textOverlay}`,
+        '',
+        `Entry Title: ${selectedEntry?.title ?? ''}`,
+        '',
+        'Entry Body:',
+        selectedEntry?.body ?? '',
+      ];
+      folder.file('details.txt', detailsLines.join('\n'));
+
       const content = await zip.generateAsync({ type: 'blob' });
       const blobUrl = URL.createObjectURL(content);
       const link = document.createElement('a');
@@ -210,7 +258,15 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#e8e5e0] flex flex-col">
       {/* Page header */}
-      <header className="flex items-center justify-center py-8 flex-shrink-0">
+      <header className="flex items-center justify-center py-8 flex-shrink-0 px-8 relative min-h-[56px]">
+        <button
+          type="button"
+          className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center p-2 rounded-lg text-[#1a1a1a] hover:bg-black/5 transition-colors"
+          onClick={openApiKeyModal}
+          aria-label="OpenRouter API key"
+        >
+          <KeyRound size={22} strokeWidth={2} aria-hidden />
+        </button>
         <img src={entriesLogo} alt="Entries" className="h-10 w-auto" />
       </header>
 
@@ -283,6 +339,9 @@ export default function App() {
               {isSuggestionsLoading && (
                 <span className="row-label-hint">generating entry ideas…</span>
               )}
+              {suggestionsError && (
+                <span className="row-label-hint text-red-700">{suggestionsError}</span>
+              )}
             </h2>
           </div>
           <div className="gen-row">
@@ -297,6 +356,7 @@ export default function App() {
                   injectedPhoto={selectedConvImage}
                   injectedTitle={entrySuggestions?.[i]?.title ?? null}
                   injectedBody={entrySuggestions?.[i]?.body ?? null}
+                  onOpenApiKey={openApiKeyModal}
                 />
               </div>
             ))}
@@ -327,6 +387,7 @@ export default function App() {
       </main>
 
       <EditPromptsModal
+        key={editPromptsMountKey}
         open={editPromptsOpen}
         onClose={() => setEditPromptsOpen(false)}
         activeTab={editPromptsTab}
@@ -337,6 +398,13 @@ export default function App() {
         setTextOverlay={setTextOverlay}
         textPromptConfig={textPromptConfig}
         setTextPromptConfig={setTextPromptConfig}
+        onApplyPromptPack={applyPromptPack}
+      />
+
+      <ApiKeyModal
+        open={apiKeyModalOpen}
+        onClose={closeApiKeyModal}
+        contentKey={apiKeyModalContentKey}
       />
     </div>
   );

@@ -63,6 +63,29 @@ export const DEFAULT_EXTRAS = [
   'heavy lashes, matte skin',
 ];
 
+const IMAGE_JSON_PROMPT_INSTRUCTION =
+  'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
+  'Follow the JSON scene specification below exactly—every field is mandatory. ' +
+  'Interpret subject, hair, outfit, setting, lighting, camera, extras, and staticStyle as one unified photograph, not a list of unrelated ideas.';
+
+function buildImagePromptFromSegments(segments) {
+  const spec = {
+    schemaVersion: 1,
+    scene: {
+      subject: segments.subject,
+      hair: segments.hair,
+      outfit: segments.outfit,
+      setting: segments.setting,
+      lighting: segments.lighting,
+      camera: segments.camera,
+      extras: segments.extras,
+      staticStyle: segments.staticStyle,
+    },
+  };
+  const json = JSON.stringify(spec, null, 2);
+  return `${IMAGE_JSON_PROMPT_INSTRUCTION}\n\n\`\`\`json\n${json}\n\`\`\``;
+}
+
 export function generateImagePrompt(config) {
   const staticStyle = config?.staticStyle ?? DEFAULT_STATIC_STYLE;
 
@@ -77,14 +100,7 @@ export function generateImagePrompt(config) {
     staticStyle,
   };
 
-  const prompt =
-    `Photo of a ${segments.subject}, ` +
-    `${segments.hair}, wearing ${segments.outfit}, ` +
-    `${segments.setting}. ` +
-    `${segments.lighting}. ` +
-    `${segments.camera}. ` +
-    `${segments.extras}. ` +
-    `${segments.staticStyle}.`;
+  const prompt = buildImagePromptFromSegments(segments);
 
   return { prompt, segments };
 }

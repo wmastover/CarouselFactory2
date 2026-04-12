@@ -1,3 +1,5 @@
+import { getOpenRouterApiKey, OPENROUTER_KEY_MISSING_MSG } from './openrouterKey';
+
 const MODEL = 'google/gemini-2.0-flash-001';
 
 const ENTRY_SUGGESTIONS_TOOL = {
@@ -55,9 +57,9 @@ Do not summarise the conversation. Do not be formal. Write like she's typing fas
  * @returns {Promise<Array<{title: string, body: string}>>}
  */
 export async function generateEntrySuggestions(messages) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error(OPENROUTER_KEY_MISSING_MSG);
   }
 
   const convText = messages

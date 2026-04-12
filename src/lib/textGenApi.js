@@ -1,3 +1,5 @@
+import { getOpenRouterApiKey, OPENROUTER_KEY_MISSING_MSG } from './openrouterKey';
+
 const MODEL = 'google/gemini-2.0-flash-001';
 
 const CONVERSATION_TOOL = {
@@ -42,8 +44,8 @@ const CONVERSATION_TOOL = {
  * @returns {Promise<string>} new message text
  */
 export async function regenerateMessage(messages, targetIdx) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+  const apiKey = getOpenRouterApiKey();
+  if (!apiKey) throw new Error(OPENROUTER_KEY_MISSING_MSG);
 
   const contextStr = messages
     .map((m, i) =>
@@ -88,9 +90,9 @@ export async function regenerateMessage(messages, targetIdx) {
  * @returns {Promise<Array<{sender: 'me'|'them', text: string}>>}
  */
 export async function generateConversation(metaPrompt, { signal } = {}) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error(OPENROUTER_KEY_MISSING_MSG);
   }
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

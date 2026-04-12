@@ -1,6 +1,7 @@
+import { KeyRound } from 'lucide-react';
 import entriesLogo from '../assets/entries-logo.png';
 
-export default function Header({ onBack }) {
+export default function Header({ onBack, onOpenApiKey }) {
   return (
     <header className="header">
       <div style={{ width: 28, display: 'flex', alignItems: 'center' }}>
@@ -15,8 +16,18 @@ export default function Header({ onBack }) {
       <div className="header-title">
         <img src={entriesLogo} alt="Entries" className="header-logo" />
       </div>
-      <div className="header-right">
-        <span className="header-notebook">📙</span>
+      <div className={`header-right${onOpenApiKey ? ' header-right-with-actions' : ''}`}>
+        {onOpenApiKey && (
+          <button
+            type="button"
+            className="header-api-key-btn"
+            onClick={onOpenApiKey}
+            aria-label="OpenRouter API key"
+          >
+            <KeyRound size={18} strokeWidth={2} aria-hidden />
+          </button>
+        )}
+        <span className="header-notebook">{'\u{1F4D9}'}</span>
       </div>
     </header>
   );
