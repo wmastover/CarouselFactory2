@@ -1,20 +1,18 @@
 import { useState } from 'react';
 
-const IMAGE_CATEGORIES = [
+const IMAGE1_CATEGORIES = [
   { key: 'subject', label: 'Subject' },
-  { key: 'hair', label: 'Hair' },
-  { key: 'outfit', label: 'Outfit' },
   { key: 'setting', label: 'Setting' },
-  { key: 'lighting', label: 'Lighting' },
-  { key: 'camera', label: 'Camera angle' },
-  { key: 'extras', label: 'Extras' },
 ];
 
-const TEXT_CATEGORIES = [
-  { key: 'dynamic', label: 'Scenario' },
-  { key: 'twist', label: 'Twist / ending' },
-  { key: 'tone', label: 'Tone' },
-  { key: 'openerStyle', label: 'Opener style' },
+const IMAGE2_CATEGORIES = [
+  { key: 'setting', label: 'Setting' },
+  { key: 'mood', label: 'Mood / expression' },
+];
+
+const IMAGE3_CATEGORIES = [
+  { key: 'setting', label: 'Setting' },
+  { key: 'mood', label: 'Mood / expression' },
 ];
 
 function CategoryPanel({ label, items, onChange }) {
@@ -75,27 +73,91 @@ function CategoryPanel({ label, items, onChange }) {
   );
 }
 
+function ImageTab({ config, setConfig, overlay, setOverlay, categories }) {
+  function updateCategory(key, newItems) {
+    setConfig((prev) => ({ ...prev, [key]: newItems }));
+  }
+
+  return (
+    <>
+      <section className="ep-section">
+        <h3 className="ep-section-label">Static style (always appended)</h3>
+        <textarea
+          className="ep-static-textarea"
+          value={config.staticStyle ?? ''}
+          onChange={(e) => setConfig((prev) => ({ ...prev, staticStyle: e.target.value }))}
+          rows={4}
+        />
+      </section>
+
+      <section className="ep-section">
+        <div className="ep-categories">
+          {categories.map(({ key, label }) =>
+            config[key] ? (
+              <CategoryPanel
+                key={key}
+                label={label}
+                items={config[key]}
+                onChange={(newItems) => updateCategory(key, newItems)}
+              />
+            ) : null
+          )}
+        </div>
+      </section>
+
+      <section className="ep-section">
+        <h3 className="ep-section-label">Text overlay</h3>
+        <input
+          className="ep-overlay-input"
+          value={overlay}
+          onChange={(e) => setOverlay(e.target.value)}
+          placeholder="Overlay text on the image…"
+        />
+      </section>
+    </>
+  );
+}
+
 export default function EditPromptsModal({
   open,
   onClose,
   activeTab,
   onTabChange,
-  promptConfig,
-  setPromptConfig,
-  textOverlay,
-  setTextOverlay,
-  textPromptConfig,
-  setTextPromptConfig,
+  img1Config,
+  setImg1Config,
+  img1Overlay,
+  setImg1Overlay,
+  img2Config,
+  setImg2Config,
+  img2Overlay,
+  setImg2Overlay,
+  img3Config,
+  setImg3Config,
+  img3Overlay,
+  setImg3Overlay,
 }) {
   if (!open) return null;
 
-  function updateImageCategory(key, newItems) {
-    setPromptConfig((prev) => ({ ...prev, [key]: newItems }));
+  function downloadPrompts() {
+    const data = {
+      image1: { config: img1Config, overlay: img1Overlay },
+      image2: { config: img2Config, overlay: img2Overlay },
+      image3: { config: img3Config, overlay: img3Overlay },
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'carousel-prompts.json';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
-  function updateTextCategory(key, newItems) {
-    setTextPromptConfig((prev) => ({ ...prev, [key]: newItems }));
-  }
+  const tabs = [
+    { id: 'image1', label: 'Day 1' },
+    { id: 'image2', label: 'Day 7' },
+    { id: 'image3', label: 'Day 100' },
+  ];
 
   return (
     <div className="ep-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -106,111 +168,51 @@ export default function EditPromptsModal({
         </div>
 
         <div className="ep-tabs">
-          <button
-            className={`ep-tab ${activeTab === 'images' ? 'ep-tab-active' : ''}`}
-            onClick={() => onTabChange('images')}
-          >
-            Images
-          </button>
-          <button
-            className={`ep-tab ${activeTab === 'conversations' ? 'ep-tab-active' : ''}`}
-            onClick={() => onTabChange('conversations')}
-          >
-            Conversations
-          </button>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`ep-tab ${activeTab === tab.id ? 'ep-tab-active' : ''}`}
+              onClick={() => onTabChange(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="ep-body">
-          {activeTab === 'images' && (
-            <>
-              {/* Section A — Static style */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Static style (always appended)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={promptConfig.staticStyle}
-                  onChange={(e) =>
-                    setPromptConfig((prev) => ({ ...prev, staticStyle: e.target.value }))
-                  }
-                  rows={4}
-                />
-              </section>
-
-              {/* Section B — Random categories */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Random options (one picked per generation)</h3>
-                <div className="ep-categories">
-                  {IMAGE_CATEGORIES.map(({ key, label }) => (
-                    <CategoryPanel
-                      key={key}
-                      label={label}
-                      items={promptConfig[key]}
-                      onChange={(newItems) => updateImageCategory(key, newItems)}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Section C — Text overlay */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Text overlay</h3>
-                <input
-                  className="ep-overlay-input"
-                  value={textOverlay}
-                  onChange={(e) => setTextOverlay(e.target.value)}
-                  placeholder="Overlay text on the image…"
-                />
-              </section>
-            </>
+          {activeTab === 'image1' && (
+            <ImageTab
+              config={img1Config}
+              setConfig={setImg1Config}
+              overlay={img1Overlay}
+              setOverlay={setImg1Overlay}
+              categories={IMAGE1_CATEGORIES}
+            />
           )}
-
-          {activeTab === 'conversations' && (
-            <>
-              {/* Section A — Static instruction */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Static instruction (always sent)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={textPromptConfig.staticInstruction}
-                  onChange={(e) =>
-                    setTextPromptConfig((prev) => ({ ...prev, staticInstruction: e.target.value }))
-                  }
-                  rows={6}
-                />
-              </section>
-
-              {/* Section B — Example conversations */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Example conversations (style guide)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={textPromptConfig.staticExamples}
-                  onChange={(e) =>
-                    setTextPromptConfig((prev) => ({ ...prev, staticExamples: e.target.value }))
-                  }
-                  rows={14}
-                />
-              </section>
-
-              {/* Section C — Random categories */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Random options (one picked per generation)</h3>
-                <div className="ep-categories">
-                  {TEXT_CATEGORIES.map(({ key, label }) => (
-                    <CategoryPanel
-                      key={key}
-                      label={label}
-                      items={textPromptConfig[key]}
-                      onChange={(newItems) => updateTextCategory(key, newItems)}
-                    />
-                  ))}
-                </div>
-              </section>
-            </>
+          {activeTab === 'image2' && (
+            <ImageTab
+              config={img2Config}
+              setConfig={setImg2Config}
+              overlay={img2Overlay}
+              setOverlay={setImg2Overlay}
+              categories={IMAGE2_CATEGORIES}
+            />
+          )}
+          {activeTab === 'image3' && (
+            <ImageTab
+              config={img3Config}
+              setConfig={setImg3Config}
+              overlay={img3Overlay}
+              setOverlay={setImg3Overlay}
+              categories={IMAGE3_CATEGORIES}
+            />
           )}
         </div>
 
         <div className="ep-footer">
+          <button className="ep-download-btn" onClick={downloadPrompts}>
+            ↓ Download prompts
+          </button>
           <button className="ep-done-btn" onClick={onClose}>
             Done
           </button>

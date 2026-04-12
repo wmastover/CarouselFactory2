@@ -1,3 +1,5 @@
+import { getApiKey } from './apiKey.js';
+
 const SYSTEM_PROMPT = `You will be given a journal entry which may be very long or very short, possibly just a few words. Read the text and any images present and help the user go deeper into their thoughts. Strongly weight your analysis and responses towards the end of the entry. Your responses should generally be short. 
 
   The journal entry contains a conversation history with clear labels:
@@ -65,9 +67,9 @@ const MODEL = 'anthropic/claude-sonnet-4.6';
  * @returns {Promise<string>} The assistant's response text.
  */
 export async function getAIResponse(conversationText, photoDataUrl = null) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set. Add it to your .env file.');
+    throw new Error('No OpenRouter API key set. Add one via the key icon in the header.');
   }
 
   // Build user message content — multimodal array when an image is attached

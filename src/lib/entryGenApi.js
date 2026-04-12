@@ -1,10 +1,12 @@
+import { getApiKey } from './apiKey.js';
+
 const MODEL = 'google/gemini-2.0-flash-001';
 
 const ENTRY_SUGGESTIONS_TOOL = {
   type: 'function',
   function: {
     name: 'generate_entry_suggestions',
-    description: 'Output 3 journal entry suggestions written from the perspective of the girl texting.',
+    description: 'Output 3 journal entry suggestions about going no contact, self-improvement, and a personal milestone.',
     parameters: {
       type: 'object',
       properties: {
@@ -16,11 +18,11 @@ const ENTRY_SUGGESTIONS_TOOL = {
             properties: {
               title: {
                 type: 'string',
-                description: 'A short, evocative journal entry title (5–8 words max).',
+                description: 'A short, punchy journal entry title (5–8 words max).',
               },
               body: {
                 type: 'string',
-                description: '2–3 emotionally honest sentences written in the first person from the girl\'s perspective.',
+                description: '2–3 emotionally honest sentences in the first person about going no contact, working on herself, and a personal milestone.',
               },
             },
             required: ['title', 'body'],
@@ -36,33 +38,65 @@ const ENTRY_SUGGESTIONS_TOOL = {
 
 const SYSTEM_PROMPT = `You are helping generate journal entry suggestions for a journaling app called Entries.
 
-Given a text message conversation, write 3 different journal entry drafts from the perspective of the person labelled "Me" in the conversation.
+Write 3 different journal entry drafts from the perspective of a woman who went no contact with an ex and has been actively working on herself — hitting the gym, going to therapy, investing in friendships, picking up hobbies, sleeping better, doing the things she always put off. She just hit a personal milestone and it's making her reflect on how much her life has changed.
 
-The tone is everything: these entries should sound like the girl is venting or spilling to her absolute best friend — casual, unfiltered, and real. Think stream of consciousness, not polished writing. She uses contractions, she trails off, she repeats herself a little when she's worked up. No full sentences required. No "dear diary." Just raw, honest, emotionally messy thoughts the way they actually sound in her head.
+The tone is everything: these entries should sound like she's venting or spilling to her absolute best friend — casual, unfiltered, and real. Think stream of consciousness, not polished writing. She uses contractions, she trails off, she repeats herself a little when she's excited or emotional. No full sentences required. No "dear diary." Just raw, honest, emotionally alive thoughts the way they actually sound in her head.
 
 Each entry should:
 - Sound conversational and natural — like a voice note transcribed, not an essay
-- React to the emotional content of the conversation — what she's feeling right now, what's bugging her, what she can't stop thinking about
-- Have a short punchy title that sounds like something she'd actually say (not poetic, just real — e.g. "why did he even say that", "omg I can't", "idk how to feel rn")
+- Touch on the relief and clarity that comes from going no contact — the mental space, the peace, realising how much she was holding herself back
+- Weave in her self-improvement journey — something specific she's been working on (fitness, therapy, a new skill, her social life, her ambitions)
+- Connect to a personal milestone she just hit — something that made it all feel real and worth it
+- Have a short punchy title that sounds like something she'd actually say (not poetic, just real — e.g. "I can't believe I stayed that long", "should've left sooner honestly", "hit my goal today wtf")
 - Have 2–3 sentences of unfiltered thought in the body
-- Feel distinct from the other two suggestions — vary the emotional angle (e.g. one venting, one sad and soft, one confused or overthinking)
+- Feel distinct from the other two suggestions — vary the emotional angle (e.g. one triumphant, one soft and reflective, one almost amused looking back)
 
-Do not summarise the conversation. Do not be formal. Write like she's typing fast and feeling a lot.`;
+Do not be formal. Write like she's typing fast and feeling a lot. Focus on growth, freedom, self-investment, and the pride of reaching something she set out to do.`;
+
+const MILESTONES = [
+  'just hit a new personal record at the gym',
+  'booked a solo trip for the first time ever',
+  'got a promotion she worked really hard for',
+  'finally finished a big project she kept putting off',
+  'celebrated a full month of a new healthy habit',
+  'ran her first 5k',
+  'had a breakthrough session in therapy',
+  'reconnected with an old friend she had drifted from',
+  'signed up for — and actually showed up to — a class she was scared to try',
+  'woke up one morning and realised she hadn\'t thought about him in days',
+  'bought herself something meaningful with her own money, just because',
+  'looked in the mirror and genuinely liked what she saw',
+  'got through a hard week without reaching out to him',
+  'cooked a proper meal for herself and felt proud of it',
+  'stayed in on a Friday night and actually enjoyed it',
+];
+
+const ANGLES = [
+  'triumphant and a little shocked at herself',
+  'softly reflective and grateful',
+  'almost amused looking back at who she used to be',
+  'quietly proud but not making a big deal of it',
+  'genuinely relieved — like she can finally breathe',
+  'fired up and energised, feeling unstoppable',
+  'tender and a bit emotional about how far she\'s come',
+];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 /**
- * Generates 3 journal entry suggestions based on a text message conversation.
- * @param {Array<{sender: 'me'|'them', text: string}>} messages
+ * Generates 3 journal entry suggestions about going no contact, self-improvement, and a personal milestone.
  * @returns {Promise<Array<{title: string, body: string}>>}
  */
-export async function generateEntrySuggestions(messages) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+export async function generateEntrySuggestions() {
+  const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error('No OpenRouter API key set. Add one via the key icon in the header.');
   }
 
-  const convText = messages
-    .map((m) => `${m.sender === 'me' ? 'Me' : 'Them'}: ${m.text}`)
-    .join('\n');
+  const milestone = pick(MILESTONES);
+  const angle = pick(ANGLES);
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -75,7 +109,10 @@ export async function generateEntrySuggestions(messages) {
       model: MODEL,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Here is the conversation:\n\n${convText}` },
+        {
+          role: 'user',
+          content: `Generate 3 journal entry suggestions. Today's milestone: she ${milestone}. Make at least one entry lead with a ${angle} emotional angle.`,
+        },
       ],
       tools: [ENTRY_SUGGESTIONS_TOOL],
       tool_choice: { type: 'function', function: { name: 'generate_entry_suggestions' } },

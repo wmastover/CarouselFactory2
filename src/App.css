@@ -1579,7 +1579,8 @@
   padding: 14px 22px 18px;
   border-top: 1px solid #f0f0f0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   flex-shrink: 0;
 }
 
@@ -1597,6 +1598,23 @@
 
 .ep-done-btn:hover {
   background: #333;
+}
+
+.ep-download-btn {
+  background: transparent;
+  color: #555;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.ep-download-btn:hover {
+  border-color: #999;
+  color: #1a1a1a;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2025,6 +2043,23 @@
   background: #eee;
 }
 
+/* ── Locked row placeholder ──────────────────────────── */
+
+.gen-row-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: #bbb;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1.5px dashed #d8d5d0;
+  border-radius: 14px;
+  padding: 32px 24px;
+  background: rgba(255,255,255,0.4);
+}
+
 /* ── Edit button on ImageGenCard ─────────────────────── */
 
 .image-edit-btn {
@@ -2048,4 +2083,188 @@
   background: rgba(0,0,0,0.75);
   color: #fff;
   transform: scale(1.04);
+}
+
+/* ── API Key Modal ───────────────────────────────────── */
+
+.ak-panel {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.ak-body {
+  padding: 20px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ak-description {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.55;
+}
+
+.ak-description a {
+  color: #1a1a1a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ak-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ak-get-key {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: color 0.12s;
+}
+
+.ak-get-key:hover {
+  color: #1a1a1a;
+}
+
+.ak-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ak-input {
+  flex: 1;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  padding: 9px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  outline: none;
+  background: #fafafa;
+  color: #1a1a1a;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+
+.ak-input:focus {
+  border-color: #1a1a1a;
+  background: #fff;
+}
+
+.ak-input::placeholder {
+  color: #bbb;
+}
+
+.ak-toggle {
+  background: none;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.ak-toggle:hover {
+  border-color: #aaa;
+  color: #1a1a1a;
+}
+
+.ak-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.ak-cancel {
+  background: none;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.ak-cancel:hover {
+  border-color: #aaa;
+  color: #1a1a1a;
+}
+
+.ak-save {
+  background: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+}
+
+.ak-save:hover {
+  background: #333;
+}
+
+.ak-save:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── API Key button in header ────────────────────────── */
+
+.header-key-btn {
+  background: none;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.header-key-btn:hover {
+  border-color: #aaa;
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.header-key-btn.no-key {
+  border-color: #f0a020;
+  color: #c07010;
+  background: #fffbf0;
+}
+
+.header-key-btn.no-key:hover {
+  background: #fff3d0;
+  border-color: #d08010;
 }

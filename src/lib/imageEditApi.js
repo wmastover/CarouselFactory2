@@ -1,3 +1,5 @@
+import { getApiKey } from './apiKey.js';
+
 const MODEL = 'google/gemini-3.1-flash-image-preview';
 
 /**
@@ -7,9 +9,10 @@ const MODEL = 'google/gemini-3.1-flash-image-preview';
  * @param {string} userPrompt - description of desired change in the masked region
  * @returns {Promise<string>} base64 data URL of the edited image
  */
+
 export async function inpaintImage(originalDataUrl, annotatedDataUrl, userPrompt, { signal } = {}) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('No OpenRouter API key set. Add one via the key icon in the header.');
 
   const instruction =
     `You are a photo editor. I'm giving you two images:\n` +

@@ -9,13 +9,21 @@ const SEGMENT_LABELS = {
   hair: 'Hair',
   outfit: 'Outfit',
   setting: 'Setting',
+  mood: 'Mood',
   lighting: 'Lighting',
   camera: 'Camera',
   extras: 'Extras',
   staticStyle: 'Static style',
 };
 
-export default function ImageGenCard({ onSelect, isSelected, promptConfig, textOverlay }) {
+export default function ImageGenCard({
+  onSelect,
+  isSelected,
+  promptConfig,
+  textOverlay,
+  referenceImageUrl,
+  promptGenerator,
+}) {
   const [imageUrl, setImageUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -25,6 +33,10 @@ export default function ImageGenCard({ onSelect, isSelected, promptConfig, textO
 
   const promptConfigRef = useRef(promptConfig);
   promptConfigRef.current = promptConfig;
+  const referenceImageUrlRef = useRef(referenceImageUrl);
+  referenceImageUrlRef.current = referenceImageUrl;
+  const promptGeneratorRef = useRef(promptGenerator);
+  promptGeneratorRef.current = promptGenerator;
 
   const generate = useCallback(async (signal) => {
     setIsLoading(true);
@@ -33,8 +45,12 @@ export default function ImageGenCard({ onSelect, isSelected, promptConfig, textO
     setSegments(null);
     setShowPrompt(false);
     try {
-      const { prompt, segments: segs } = generateImagePrompt(promptConfigRef.current);
-      const url = await generateImage(prompt, { signal });
+      const generator = promptGeneratorRef.current ?? generateImagePrompt;
+      const { prompt, segments: segs } = generator(promptConfigRef.current);
+      const url = await generateImage(prompt, {
+        signal,
+        referenceImageUrl: referenceImageUrlRef.current,
+      });
       setImageUrl(url);
       setSegments(segs);
     } catch (err) {
@@ -83,9 +99,8 @@ export default function ImageGenCard({ onSelect, isSelected, promptConfig, textO
           <>
             <img src={imageUrl} alt="Generated" className="gen-card-img" />
             <div className="tiktok-text-overlay">
-              {textOverlay ?? "Sometimes you just gotta read a man's text and go about your day"}
+              {textOverlay ?? ''}
             </div>
-            {/* Edit button */}
             <button
               className="image-edit-btn"
               style={{ position: 'absolute', bottom: 52, right: 12, zIndex: 5 }}
