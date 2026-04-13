@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { generateImage } from '../lib/imageGenApi';
+import { generateImage, IMAGE_GEN_MODEL } from '../lib/imageGenApi';
 import { generateImagePrompt } from '../lib/promptGen';
 import { Button } from './ui/button';
 import ImageEditModal from './ImageEditModal';
@@ -28,6 +28,7 @@ export default function ImageGenCard({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [segments, setSegments] = useState(null);
+  const [rawPrompt, setRawPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
@@ -43,6 +44,7 @@ export default function ImageGenCard({
     setError(null);
     setImageUrl(null);
     setSegments(null);
+    setRawPrompt(null);
     setShowPrompt(false);
     try {
       const generator = promptGeneratorRef.current ?? generateImagePrompt;
@@ -53,6 +55,7 @@ export default function ImageGenCard({
       });
       setImageUrl(url);
       setSegments(segs);
+      setRawPrompt(prompt);
     } catch (err) {
       if (err.name === 'AbortError') return;
       setError(err.message || 'Generation failed');
@@ -137,6 +140,18 @@ export default function ImageGenCard({
                       </div>
                     )
                   ))}
+                </div>
+                <div className="prompt-overlay-footer">
+                  <div className="prompt-meta-row">
+                    <span className="prompt-segment-label">Model</span>
+                    <span className="prompt-model-id">{IMAGE_GEN_MODEL}</span>
+                  </div>
+                  {rawPrompt && (
+                    <div className="prompt-raw-block">
+                      <span className="prompt-segment-label">Full prompt</span>
+                      <pre className="prompt-raw-text">{rawPrompt}</pre>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

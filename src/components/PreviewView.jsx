@@ -74,8 +74,6 @@ function DraggablePhoto({ src }) {
     };
   }, [dragging]);
 
-  useEffect(() => { setOffset({ x: 0, y: 0 }); }, [src]);
-
   return (
     <div
       ref={wrapRef}
@@ -199,7 +197,7 @@ export default function PreviewView({
         </div>
       )}
 
-      {photo && <DraggablePhoto src={photo} />}
+      {photo && <DraggablePhoto key={photo} src={photo} />}
 
       <div className="preview-content">
         {title && (

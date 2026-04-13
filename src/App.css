@@ -100,6 +100,29 @@
   justify-content: flex-end;
 }
 
+.header-right.header-right-with-actions {
+  width: auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.header-api-key-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  line-height: 0;
+}
+
+.header-api-key-btn:hover {
+  background: #f5f5f5;
+}
+
 .header-notebook {
   font-size: 22px;
 }
@@ -690,6 +713,51 @@
   font-size: 14px;
   color: rgba(255, 255, 255, 0.92);
   line-height: 1.45;
+}
+
+.prompt-overlay-footer {
+  margin-top: auto;
+  padding: 14px 18px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prompt-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prompt-model-id {
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  color: rgba(255, 255, 255, 0.85);
+  word-break: break-all;
+}
+
+.prompt-raw-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-raw-text {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  max-height: 48vh;
+  overflow-y: auto;
 }
 
 /* Loading skeleton */
@@ -1321,6 +1389,10 @@
   overflow: hidden;
 }
 
+.api-key-panel {
+  max-width: 480px;
+}
+
 .ep-header {
   display: flex;
   align-items: center;
@@ -1582,6 +1654,55 @@
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+}
+
+.ep-footer-with-transfer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.ep-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ep-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ep-transfer-btn {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.ep-transfer-btn:hover {
+  background: #f8f8f8;
+  border-color: #ccc;
+}
+
+.ep-import-input {
+  display: none;
+}
+
+.ep-import-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #b91c1c;
 }
 
 .ep-done-btn {

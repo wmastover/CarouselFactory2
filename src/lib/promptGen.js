@@ -2,172 +2,211 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ── Overlay text ─────────────────────────────────────────────────
-export const DEFAULT_IMAGE1_OVERLAY = 'day 1 no contact';
-export const DEFAULT_IMAGE2_OVERLAY = 'day 7 no contact';
-export const DEFAULT_IMAGE3_OVERLAY = 'day 100 no contact';
+// ── Image prompt generation ──────────────────────────────────────
 
-// ── Image 1 — day 1 no contact / raw grief ──────────────────────
+export const DEFAULT_STATIC_STYLE =
+  'dark hair, sexy neutral expression, not smiling, lips slightly parted, ' +
+  'black or dark clothing showing some cleavage, ' +
+  'front camera selfie, very close crop on face and chest, ' +
+  'night time, warm dim indoor light, ' +
+  'realistic iphone photo, slightly grainy, no retouching, natural skin';
 
-export const DEFAULT_IMAGE1_SUBJECT = [
+export const DEFAULT_SUBJECT = [
   'attractive young woman in her early 20s',
-  'young woman in her mid-20s',
+  'young brunette woman with sharp features',
+  'confident young woman',
   'striking young woman in her 20s',
-  'pretty young woman with natural features',
 ];
 
-export const DEFAULT_IMAGE1_SETTING = [
-  'lying curled up in bed, wearing an oversized dark navy hoodie with the hood half-up and grey sweatpants, looking blankly down at her phone with a withdrawn expression — zero eye contact with camera. The bedding is a muted terracotta duvet on white sheets. A single window lets in flat cool grey natural light',
-  'lying on her side in bed, wearing a washed-black oversized hoodie, grey sweatpants, hood pulled all the way up. One arm hugs a pillow. The bedding is a dusty sage green comforter on white sheets. Flat cool grey daylight from a nearby window',
-  'curled up in bed, wearing a charcoal oversized sweatshirt and loose joggers. Her face is turned slightly down, phone face-down beside her, not looking at camera. The bedding is a warm grey duvet on cream sheets. Cool flat window light from the side',
-  'lying in bed, wearing a dark olive oversized hoodie, hood up, arms pulled inside the sleeves. Staring blankly downward, not at camera. The bedding is a muted dusty rose duvet. A single window behind her casts flat cool grey morning light',
-  'curled up small on a bed near the wall, wearing an oversized dark charcoal hoodie and sweatpants. One knee pulled to chest. Looking down at her phone with a blank hollow expression, zero eye contact. Muted terracotta bedding, flat cool grey light from the window',
+export const DEFAULT_HAIR = [
+  'long dark brown hair spread out',
+  'voluminous wavy dark hair',
+  'straight dark hair loosely framing face',
+  'tousled dark brunette hair, slightly messy',
 ];
 
-export const DEFAULT_IMAGE1_STATIC_STYLE =
-  'messy unstyled hair falling across the pillow, no makeup, bare skin, ' +
-  'white walls, melancholic and stagnant mood, ' +
-  'muted earth tone color palette — cream, grey, terracotta or sage, navy or charcoal, ' +
-  'soft film grain, slightly desaturated color grading, ' +
-  'realistic iPhone photo style, not polished or staged, 9:16 vertical portrait, slightly elevated angle';
+export const DEFAULT_OUTFIT = [
+  'black corset top',
+  'black bralette, straps visible',
+  'tight black low-cut top',
+  'black bodysuit with thin straps, showing off some cleavage',
+  'black crop top, slightly off shoulder',
+];
 
-export function generateImage1Prompt(config) {
-  const staticStyle = config?.staticStyle ?? DEFAULT_IMAGE1_STATIC_STYLE;
-  const segments = {
-    subject: pick(config?.subject ?? DEFAULT_IMAGE1_SUBJECT),
-    setting: pick(config?.setting ?? DEFAULT_IMAGE1_SETTING),
-    staticStyle,
+export const DEFAULT_SETTING = [
+  'lying in bed at night, rumpled sheets, dim warm lamp glow',
+  'in the passenger seat of a car at night, window behind',
+  'in the back seat of a car at night, window behind',
+  'lying back on a bed, phone held above, looking up into camera',
+  'in a dimly lit bedroom, lying sideways on pillow',
+  'in the back seat of a car at night, city lights softly blurred outside',
+];
+
+export const DEFAULT_LIGHTING = [
+  'warm dim bedside lamp, soft shadows',
+  'low warm ambient light, slightly underexposed',
+  'dim yellow room light, natural night feel',
+  'soft warm glow from off-screen lamp, mostly dark background',
+];
+
+export const DEFAULT_CAMERA = [
+  'selfie held above looking down, slightly tilted',
+  'front camera selfie, very close, candid',
+  'selfie angle from slightly above, face and chest filling frame',
+  'close front camera crop, slightly grainy, spontaneous',
+];
+
+export const DEFAULT_EXTRAS = [
+  'glossy nude lip, heavy lashes, dewy skin',
+  'smoky eye, glossy lip',
+  'minimal makeup, glossy lip, looking directly into lens',
+  'heavy lashes, matte skin',
+];
+
+const IMAGE_JSON_PROMPT_INSTRUCTION =
+  'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
+  'Follow the JSON scene specification below exactly—every field is mandatory. ' +
+  'Interpret subject, hair, outfit, setting, lighting, camera, extras, and staticStyle as one unified photograph, not a list of unrelated ideas.';
+
+function buildImagePromptFromSegments(segments) {
+  const spec = {
+    schemaVersion: 1,
+    scene: {
+      subject: segments.subject,
+      hair: segments.hair,
+      outfit: segments.outfit,
+      setting: segments.setting,
+      lighting: segments.lighting,
+      camera: segments.camera,
+      extras: segments.extras,
+      staticStyle: segments.staticStyle,
+    },
   };
-
-  const prompt = [segments.subject, segments.setting, segments.staticStyle]
-    .filter(Boolean)
-    .join('. ');
-
-  return { prompt, segments };
+  const json = JSON.stringify(spec, null, 2);
+  return `${IMAGE_JSON_PROMPT_INSTRUCTION}\n\n\`\`\`json\n${json}\n\`\`\``;
 }
-
-// Legacy stubs for backwards compatibility
-export const DEFAULT_IMAGE1_HAIR = [];
-export const DEFAULT_IMAGE1_OUTFIT = [];
-export const DEFAULT_IMAGE1_LIGHTING = [];
-export const DEFAULT_IMAGE1_CAMERA = [];
-export const DEFAULT_IMAGE1_EXTRAS = [];
-
-// ── Image 2 — day 7 no contact / functional sadness ──────────────
-// Character consistency comes from the row 1 reference image;
-// prompts describe the mood/situation shift only.
-
-export const DEFAULT_IMAGE2_SETTING = [
-  'sitting cross-legged on her bed wearing a cozy patterned robe, hair pulled back in a loose low bun. She has a white sheet face mask on and is looking down at an open journal in her lap, pen in hand, writing slowly. A mug of tea sits beside her on the bed',
-  'sitting upright on her bed in an oversized soft cardigan in warm cream tones, hair clipped back loosely. She is holding a mug of tea with both hands, looking down at it with a calm focused expression. A small lit candle on the nightstand beside her',
-  'seated on her bed in a soft knit matching set in warm beige, hair in a low bun. She has a clay face mask on and is scrolling her phone with a quiet, unbothered expression. A notebook and pen are open beside her, a candle burning nearby',
-  'sitting cross-legged on her bed in a fluffy oversized robe, hair in a messy clip. She is looking down at a journal, pen hovering over the page, mid-thought. A dog is curled up asleep next to her. Warm lamplight from the bedside table',
-  'seated on her bed in a soft cardigan, hair pulled back, minimal natural moisturizer on her skin — no full mask but visibly doing a skincare routine. She holds a small bottle of serum, looking down at it with a calm, introspective expression. Tea on the nightstand',
-];
-
-export const DEFAULT_IMAGE2_MOOD = [
-  'expression is calm and focused, present in the moment, quietly investing in herself',
-  'quietly introspective, not sad but clearly still processing something internally',
-  'a small, tentative half-smile — not fully there yet, but something is shifting',
-  'serene and still, looking down with soft eyes, like she is gently figuring things out',
-  'composed and intentional, the kind of calm that comes from deciding to take care of yourself',
-];
-
-export const DEFAULT_IMAGE2_STATIC_STYLE =
-  'warm golden bedside lamp light creating a soft glow, tidy bedroom background with neutral curtains, ' +
-  'realistic casual photo, slightly grainy, no retouching, natural skin, ' +
-  '9:16 portrait, candid unposed feel, warm beige and cream color palette, ' +
-  'same woman as the reference image';
-
-export function generateImage2Prompt(config) {
-  const staticStyle = config?.staticStyle ?? DEFAULT_IMAGE2_STATIC_STYLE;
-  const segments = {
-    setting: pick(config?.setting ?? DEFAULT_IMAGE2_SETTING),
-    mood: pick(config?.mood ?? DEFAULT_IMAGE2_MOOD),
-    staticStyle,
-  };
-
-  const prompt = [segments.setting, segments.mood, segments.staticStyle]
-    .filter(Boolean)
-    .join('. ');
-
-  return { prompt, segments };
-}
-
-// Legacy arrays kept for backwards compatibility
-export const DEFAULT_IMAGE2_OUTFIT = ['clean casual clothes'];
-export const DEFAULT_IMAGE2_LIGHTING = ['soft natural daylight'];
-
-// ── Image 3 — day 100 no contact / glow-up celebration ───────────
-// Character consistency comes from the row 1 reference image.
-
-export const DEFAULT_IMAGE3_SETTING = [
-  'standing confidently in a modern white-walled space, gold "100" balloons slightly out of focus in the background. Bright warm overhead lighting. Her hair is long, sleek, and straight with laid edges. Bold thick gold chain necklace',
-  'standing in front of a clean white wall, a birthday-style cake with lit candles on a table beside her, gold confetti catching the light. Her hair is voluminous blown-out waves. Layered gold necklaces',
-  'standing at a full-length mirror in a bright white room, gold "100" balloons and gold streamers visible behind her in the reflection. Her hair is defined and voluminous. A chunky silver chain necklace',
-  'standing in a bright modern kitchen, a cake with "100" candles on the counter beside her, warm light overhead. Her hair is long and styled with big voluminous curls. Gold hoop earrings and a gold necklace',
-  'standing in a clean well-lit room, gold "100" number balloons floating slightly out of focus behind her. Her hair is slicked back sleek and glossy. A statement gold chain necklace and gold earrings',
-];
-
-export const DEFAULT_IMAGE3_MOOD = [
-  'looking directly into the camera with a wide genuine smile showing teeth, one hand resting on her hip',
-  'looking directly into the camera with a beaming full smile, one hand lightly touching her necklace',
-  'direct full eye contact with the camera, laughing openly, head slightly tilted back, arms relaxed',
-  'staring straight into the camera with a confident radiant smile, one hand raised slightly as if celebrating',
-  'direct eye contact, glowing smile showing teeth, both hands relaxed at her sides — completely unbothered and thriving',
-];
-
-export const DEFAULT_IMAGE3_STATIC_STYLE =
-  'form-fitting sleek black outfit — bodysuit or sleeveless top, full glam makeup: defined brows, dramatic lashes, soft nude or pink lip, glowing skin, ' +
-  'bright warm even lighting — ring light or bright overhead, high contrast black outfit against white or bright background, ' +
-  'pops of gold, sharp vibrant color grading, ' +
-  'realistic iphone photo style, polished but still personal, slightly grainy, ' +
-  '9:16 vertical portrait, same woman as the reference image, ' +
-  'clear glow-up — looks radiant, confident, completely herself';
-
-export function generateImage3Prompt(config) {
-  const staticStyle = config?.staticStyle ?? DEFAULT_IMAGE3_STATIC_STYLE;
-  const segments = {
-    setting: pick(config?.setting ?? DEFAULT_IMAGE3_SETTING),
-    mood: pick(config?.mood ?? DEFAULT_IMAGE3_MOOD),
-    staticStyle,
-  };
-
-  const prompt = [segments.setting, segments.mood, segments.staticStyle]
-    .filter(Boolean)
-    .join('. ');
-
-  return { prompt, segments };
-}
-
-// Legacy arrays kept for backwards compatibility
-export const DEFAULT_IMAGE3_OUTFIT = ['form-fitting sleek black outfit'];
-export const DEFAULT_IMAGE3_LIGHTING = ['bright warm even lighting'];
-
-// ── Legacy exports (kept for backwards compatibility) ────────────
-
-export const DEFAULT_STATIC_STYLE = DEFAULT_IMAGE1_STATIC_STYLE;
-export const DEFAULT_SUBJECT = DEFAULT_IMAGE1_SUBJECT;
-export const DEFAULT_HAIR = DEFAULT_IMAGE1_HAIR;
-export const DEFAULT_OUTFIT = DEFAULT_IMAGE1_OUTFIT;
-export const DEFAULT_SETTING = DEFAULT_IMAGE1_SETTING;
-export const DEFAULT_LIGHTING = DEFAULT_IMAGE1_LIGHTING;
-export const DEFAULT_CAMERA = DEFAULT_IMAGE1_CAMERA;
-export const DEFAULT_EXTRAS = DEFAULT_IMAGE1_EXTRAS;
 
 export function generateImagePrompt(config) {
-  return generateImage1Prompt(config);
+  const staticStyle = config?.staticStyle ?? DEFAULT_STATIC_STYLE;
+
+  const segments = {
+    subject: pick(config?.subject ?? DEFAULT_SUBJECT),
+    hair: pick(config?.hair ?? DEFAULT_HAIR),
+    outfit: pick(config?.outfit ?? DEFAULT_OUTFIT),
+    setting: pick(config?.setting ?? DEFAULT_SETTING),
+    lighting: pick(config?.lighting ?? DEFAULT_LIGHTING),
+    camera: pick(config?.camera ?? DEFAULT_CAMERA),
+    extras: pick(config?.extras ?? DEFAULT_EXTRAS),
+    staticStyle,
+  };
+
+  const prompt = buildImagePromptFromSegments(segments);
+
+  return { prompt, segments };
 }
 
-// ── Text / iMessage exports (kept to avoid import errors) ────────
+// ── Text / iMessage conversation meta-prompt generation ──────────
 
-export const DEFAULT_STATIC_INSTRUCTION = '';
-export const DEFAULT_STATIC_EXAMPLES = '';
-export const DEFAULT_DYNAMIC = [];
-export const DEFAULT_TWIST = [];
-export const DEFAULT_TONE = [];
-export const DEFAULT_OPENER_STYLE = [];
+const STATIC_HOOK_CONTEXT =
+  'The carousel this will appear on has the hook: ' +
+  '"sometimes you just got to read a mans text and go about your day"';
 
-export function generateTextMetaPrompt() {
-  return '';
+export const DEFAULT_STATIC_EXAMPLES = `
+Example 1:
+Me: "im seeing someone else"
+Them: "You dating me and someone else?"
+Me: "yeah"
+Them: "Fuck it make a group chat"
+Them: "So I can meet my boyfriend in law"
+
+Example 2:
+Them: "Do you like me or not"
+Me: "your gf does"
+Them: "Don't bring her up"
+Them: "This is about us"
+Them: "I would treat you better than I treat her"
+
+Example 3:
+Them: "My dream girl"
+Me: "shut up im not"
+Them: "I never said what kind of dreams"
+Them: "Ur a nightmare"
+`;
+
+export const DEFAULT_STATIC_INSTRUCTION =
+  'You are writing a short, punchy iMessage conversation for a viral social media carousel. ' +
+  'The conversation must feel real, unfiltered, and instantly relatable. ' +
+  'It should be 3–5 messages total. ' +
+  'The key is engagement: mild controversy, a twist, a self-own, ragebait, or a moment that makes someone screenshot and share. ' +
+  'CRITICAL RULE: The final message in the conversation MUST always be from "them" — never from "me". ' +
+  '"Me" does not respond to the last message. The conversation ends with "them" hanging, left on read. ' +
+  'Do NOT add quotation marks inside the message text. ' +
+  'Do NOT include timestamps, read receipts, or any formatting — just the raw dialogue. ' +
+  'Only use \'me\' and \'them\' as senders. ' +
+  STATIC_HOOK_CONTEXT;
+
+export const DEFAULT_DYNAMIC = [
+  'situationship that never got a label',
+  'someone who has a girlfriend but keeps texting you',
+  'an ex who thinks they still have a chance',
+  'a talking stage that\'s been going on way too long',
+  'someone you friend-zoned who hasn\'t accepted it',
+  'a guy who\'s clearly in love but will never admit it',
+  'someone who ghosted you and just came back',
+  'a guy who flirts but acts clueless when called out',
+  'someone who thinks they\'re smooth but isn\'t',
+  'an ex who saw you looking good and regrets everything',
+];
+
+export const DEFAULT_TWIST = [
+  'ends with a brutal self-own from them',
+  'ends with a complete reversal — they say something that backfires on themselves',
+  'has an unexpected reveal in their final message that recontextualises the whole exchange',
+  'escalates from innocent to unhinged in their last message',
+  'ends with them doubling down on something embarrassing with zero self-awareness',
+  'their last message is so chaotic it makes no sense but is somehow perfect',
+  'them accidentally exposes themselves completely in their final message',
+  'them tries to be slick but ends up accidentally confessing something in the last message',
+  'their final message is the most unhinged possible response to something totally normal',
+  'ends with them going weirdly philosophical to avoid accountability',
+];
+
+export const DEFAULT_TONE = [
+  'dry and witty',
+  'unbothered and slightly cruel',
+  'chaotic and unhinged',
+  'passive-aggressive',
+  'blunt to the point of being funny',
+  'deadpan',
+  'overly casual about something that should be a big deal',
+];
+
+export const DEFAULT_OPENER_STYLE = [
+  'starts with an accusation',
+  'starts with a confession',
+  'starts with a compliment that immediately goes wrong',
+  'starts with a question that has no good answer',
+  'starts mid-argument, no context',
+  'starts with something sweet that turns sour fast',
+  'starts with them sliding back in after a long silence',
+  'starts with a bold claim from them that unravels',
+];
+
+export function generateTextMetaPrompt(config) {
+  const staticInstruction = config?.staticInstruction ?? DEFAULT_STATIC_INSTRUCTION;
+  const staticExamples = config?.staticExamples ?? DEFAULT_STATIC_EXAMPLES;
+  const dynamic = config?.dynamic ?? DEFAULT_DYNAMIC;
+  const twist = config?.twist ?? DEFAULT_TWIST;
+  const tone = config?.tone ?? DEFAULT_TONE;
+  const openerStyle = config?.openerStyle ?? DEFAULT_OPENER_STYLE;
+
+  const directive =
+    `Write a conversation between two people in a ${pick(dynamic)}. ` +
+    `The conversation ${pick(openerStyle)}. ` +
+    `The tone is ${pick(tone)}. ` +
+    `The punchline or ending ${pick(twist)}. ` +
+    `Use the examples below as a style guide — match their energy, length, and format.\n\n` +
+    `Examples:${staticExamples}`;
+
+  return `${staticInstruction}\n\n${directive}`;
 }
