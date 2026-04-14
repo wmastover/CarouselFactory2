@@ -1,6 +1,7 @@
 import { getApiKey } from './apiKey.js';
 
-const MODEL = 'google/gemini-3.1-flash-image-preview';
+export const IMAGE_GEN_MODEL = 'google/gemini-3.1-flash-image-preview';
+const MODEL = IMAGE_GEN_MODEL;
 
 /**
  * Generates an image via OpenRouter using Gemini's image generation.

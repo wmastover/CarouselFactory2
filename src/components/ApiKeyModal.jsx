@@ -1,90 +1,76 @@
 import { useState } from 'react';
-import { setApiKey, getApiKey } from '../lib/apiKey.js';
+import { KeyRound } from 'lucide-react';
+import { Button } from './ui/button';
+import { LS_OPENROUTER_API_KEY } from '../lib/openrouterKey';
 
-export default function ApiKeyModal({ onClose }) {
-  const [value, setValue] = useState(getApiKey);
-  const [visible, setVisible] = useState(false);
+function ApiKeyModalContent({ onClose }) {
+  const [draft, setDraft] = useState(() => localStorage.getItem(LS_OPENROUTER_API_KEY) || '');
 
-  function handleSave() {
-    setApiKey(value);
+  function handleSubmit(e) {
+    e.preventDefault();
+    const t = draft.trim();
+    if (t) {
+      localStorage.setItem(LS_OPENROUTER_API_KEY, t);
+    } else {
+      localStorage.removeItem(LS_OPENROUTER_API_KEY);
+    }
     onClose();
   }
 
-  function handleKeyDown(e) {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') onClose();
-  }
-
   return (
-    <div className="ep-backdrop" onClick={onClose}>
-      <div
-        className="ak-panel"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="ep-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="ep-panel api-key-panel" role="dialog" aria-labelledby="api-key-title" aria-modal="true">
         <div className="ep-header">
-          <span className="ep-title">OpenRouter API Key</span>
-          <button className="ep-close" onClick={onClose} aria-label="Close">✕</button>
+          <h2 id="api-key-title" className="ep-title flex items-center gap-2">
+            <KeyRound className="shrink-0" size={18} strokeWidth={2} aria-hidden />
+            OpenRouter API key
+          </h2>
+          <button type="button" className="ep-close" onClick={onClose} aria-label="Close">
+            {'\u2715'}
+          </button>
         </div>
 
-        <div className="ak-body">
-          <p className="ak-description">
-            This app calls{' '}
-            <a href="https://openrouter.ai" target="_blank" rel="noreferrer">
-              OpenRouter
-            </a>{' '}
-            directly from your browser. Your key is stored only in this browser's localStorage and is never sent anywhere except OpenRouter.
-          </p>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="ep-body">
+            <p className="text-[13px] text-[#555] leading-relaxed">
+              Your key is stored only in this browser (localStorage). Get a key from{' '}
+              <a
+                href="https://openrouter.ai/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#1a1a1a] underline underline-offset-2 font-medium"
+              >
+                openrouter.ai/keys
+              </a>
+              .
+            </p>
 
-          <label className="ak-label" htmlFor="ak-input">
-            API key
-            <a
-              className="ak-get-key"
-              href="https://openrouter.ai/keys"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Get a key ↗
-            </a>
-          </label>
-
-          <div className="ak-input-row">
-            <input
-              id="ak-input"
-              className="ak-input"
-              type={visible ? 'text' : 'password'}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="sk-or-..."
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-            />
-            <button
-              className="ak-toggle"
-              type="button"
-              onClick={() => setVisible((v) => !v)}
-              aria-label={visible ? 'Hide key' : 'Show key'}
-            >
-              {visible ? 'Hide' : 'Show'}
-            </button>
+            <label className="flex flex-col gap-2">
+              <span className="text-[12px] font-semibold text-[#1a1a1a]">API key</span>
+              <input
+                className="ep-overlay-input font-mono text-[13px]"
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="sk-or-…"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+            </label>
           </div>
 
-          <div className="ak-actions">
-            <button className="ak-cancel" type="button" onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              className="ak-save"
-              type="button"
-              onClick={handleSave}
-              disabled={!value.trim()}
-            >
-              Save key
-            </button>
+          <div className="ep-footer api-key-footer">
+            <Button type="submit" size="default">
+              Save
+            </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
+}
+
+export default function ApiKeyModal({ open, onClose, contentKey = 0 }) {
+  if (!open) return null;
+  return <ApiKeyModalContent key={contentKey} onClose={onClose} />;
 }
