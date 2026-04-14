@@ -1,3 +1,5 @@
+import { getOpenRouterApiKey, OPENROUTER_KEY_MISSING_MSG } from './openrouterKey';
+
 export const IMAGE_GEN_MODEL = 'google/gemini-3.1-flash-image-preview';
 
 /**
@@ -7,9 +9,9 @@ export const IMAGE_GEN_MODEL = 'google/gemini-3.1-flash-image-preview';
  * @returns {Promise<string>} base64 data URL of the generated image
  */
 export async function generateImage(prompt, { signal, referenceImageUrl } = {}) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error(OPENROUTER_KEY_MISSING_MSG);
   }
 
   const messageContent = referenceImageUrl

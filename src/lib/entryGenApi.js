@@ -1,3 +1,5 @@
+import { getOpenRouterApiKey, OPENROUTER_KEY_MISSING_MSG } from './openrouterKey';
+
 const MODEL = 'google/gemini-2.0-flash-001';
 
 const ENTRY_SUGGESTIONS_TOOL = {
@@ -88,9 +90,9 @@ function pick(arr) {
  * @returns {Promise<Array<{title: string, body: string}>>}
  */
 export async function generateEntrySuggestions() {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
-    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
+    throw new Error(OPENROUTER_KEY_MISSING_MSG);
   }
 
   const milestone = pick(MILESTONES);

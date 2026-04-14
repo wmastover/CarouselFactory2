@@ -2084,3 +2084,217 @@
   color: #fff;
   transform: scale(1.04);
 }
+
+/* ── App-level API key button ────────────────────────── */
+
+.app-api-key-btn {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2e7d32;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.app-api-key-btn:hover {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.2);
+}
+
+.app-api-key-btn-missing {
+  color: #c0392b;
+  border-color: rgba(192,57,43,0.25);
+  animation: pulse-key 2s ease-in-out infinite;
+}
+
+@keyframes pulse-key {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+  50%      { box-shadow: 0 0 0 4px rgba(192,57,43,0.12); }
+}
+
+/* ── API Key Modal (ak-*) ────────────────────────────── */
+
+.ak-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(2px);
+}
+
+.ak-panel {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: ak-enter 0.2s ease-out;
+}
+
+@keyframes ak-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ak-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ak-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a1a1a;
+}
+
+.ak-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.ak-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1;
+}
+
+.ak-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.ak-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ak-description {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.55;
+}
+
+.ak-description a {
+  color: #3d5afe;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.ak-description a:hover {
+  text-decoration: underline;
+}
+
+.ak-input {
+  width: 100%;
+  font-size: 14px;
+  color: #1a1a1a;
+  padding: 10px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  outline: none;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  letter-spacing: 0.5px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.ak-input:focus {
+  border-color: #3d5afe;
+  box-shadow: 0 0 0 3px rgba(61,90,254,0.1);
+}
+
+.ak-input::placeholder {
+  color: #c0c0c0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.ak-hint {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+}
+
+.ak-hint-warn {
+  color: #c0392b;
+}
+
+.ak-footer {
+  padding: 14px 22px 18px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ak-cancel-btn {
+  background: none;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.ak-cancel-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+  border-color: #bbb;
+}
+
+.ak-save-btn {
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.ak-save-btn:hover {
+  background: #333;
+}
+
+.ak-clear-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #c0392b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+
+.ak-clear-btn:hover {
+  background: rgba(192,57,43,0.06);
+}

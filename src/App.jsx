@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
+import { KeyRound } from 'lucide-react';
 import ImageGenCard from './components/ImageGenCard';
 import SinglePhone from './components/SinglePhone';
 import EditPromptsModal from './components/EditPromptsModal';
+import ApiKeyModal from './components/ApiKeyModal';
 import { Button } from './components/ui/button';
 import { generateEntrySuggestions } from './lib/entryGenApi';
+import { getOpenRouterApiKey } from './lib/openrouterKey';
 import {
   DEFAULT_IMAGE1_OVERLAY,
   DEFAULT_IMAGE2_OVERLAY,
@@ -121,6 +124,8 @@ export default function App() {
 
   const [editPromptsOpen, setEditPromptsOpen] = useState(false);
   const [editPromptsTab, setEditPromptsTab] = useState('image1');
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const hasApiKey = !!getOpenRouterApiKey();
 
   // ── Row 1 state ───────────────────────────────────────────────
   const [selectedImg1Url, setSelectedImg1Url] = useState(null);
@@ -288,8 +293,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#e8e5e0] flex flex-col">
-      <header className="flex items-center justify-center py-8 flex-shrink-0">
+      <header className="flex items-center justify-between py-8 px-8 flex-shrink-0">
+        <div style={{ width: 36 }} />
         <img src={entriesLogo} alt="Entries" className="h-10 w-auto" />
+        <button
+          type="button"
+          className={`app-api-key-btn${hasApiKey ? '' : ' app-api-key-btn-missing'}`}
+          onClick={() => setApiKeyOpen(true)}
+          aria-label="OpenRouter API key"
+          title={hasApiKey ? 'API key configured' : 'Set your API key'}
+        >
+          <KeyRound size={18} strokeWidth={2} />
+        </button>
       </header>
 
       <main className="flex flex-col gap-12 pb-16 px-8">
@@ -488,6 +503,8 @@ export default function App() {
         img3Overlay={img3Overlay}
         setImg3Overlay={setImg3Overlay}
       />
+
+      <ApiKeyModal open={apiKeyOpen} onClose={() => setApiKeyOpen(false)} />
     </div>
   );
 }
