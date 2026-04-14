@@ -1,7 +1,6 @@
-import { useState, useRef } from 'react';
-import { buildPromptPack, parsePromptPack } from '../lib/promptPack';
+import { useState } from 'react';
 
-const IMAGE_CATEGORIES = [
+const IMAGE1_CATEGORIES = [
   { key: 'subject', label: 'Subject' },
   { key: 'hair', label: 'Hair' },
   { key: 'outfit', label: 'Outfit' },
@@ -11,11 +10,11 @@ const IMAGE_CATEGORIES = [
   { key: 'extras', label: 'Extras' },
 ];
 
-const TEXT_CATEGORIES = [
-  { key: 'dynamic', label: 'Scenario' },
-  { key: 'twist', label: 'Twist / ending' },
-  { key: 'tone', label: 'Tone' },
-  { key: 'openerStyle', label: 'Opener style' },
+const IMAGE23_CATEGORIES = [
+  { key: 'outfit', label: 'Outfit' },
+  { key: 'setting', label: 'Setting' },
+  { key: 'mood', label: 'Mood' },
+  { key: 'lighting', label: 'Lighting' },
 ];
 
 function CategoryPanel({ label, items, onChange }) {
@@ -81,61 +80,31 @@ export default function EditPromptsModal({
   onClose,
   activeTab,
   onTabChange,
-  promptConfig,
-  setPromptConfig,
-  textOverlay,
-  setTextOverlay,
-  textPromptConfig,
-  setTextPromptConfig,
-  onApplyPromptPack,
+  img1Config,
+  setImg1Config,
+  img1Overlay,
+  setImg1Overlay,
+  img2Config,
+  setImg2Config,
+  img2Overlay,
+  setImg2Overlay,
+  img3Config,
+  setImg3Config,
+  img3Overlay,
+  setImg3Overlay,
 }) {
-  const fileInputRef = useRef(null);
-  const [importError, setImportError] = useState(null);
-
   if (!open) return null;
 
-  function updateImageCategory(key, newItems) {
-    setPromptConfig((prev) => ({ ...prev, [key]: newItems }));
-  }
+  const TAB_MAP = {
+    image1: { config: img1Config, setConfig: setImg1Config, overlay: img1Overlay, setOverlay: setImg1Overlay, categories: IMAGE1_CATEGORIES, label: 'Day 1' },
+    image2: { config: img2Config, setConfig: setImg2Config, overlay: img2Overlay, setOverlay: setImg2Overlay, categories: IMAGE23_CATEGORIES, label: 'Day 7' },
+    image3: { config: img3Config, setConfig: setImg3Config, overlay: img3Overlay, setOverlay: setImg3Overlay, categories: IMAGE23_CATEGORIES, label: 'Day 100' },
+  };
 
-  function updateTextCategory(key, newItems) {
-    setTextPromptConfig((prev) => ({ ...prev, [key]: newItems }));
-  }
+  const current = TAB_MAP[activeTab] ?? TAB_MAP.image1;
 
-  function handleExportPrompts() {
-    setImportError(null);
-    const pack = buildPromptPack({ promptConfig, textOverlay, textPromptConfig });
-    const json = JSON.stringify(pack, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'carousel-factory-prompts.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleImportPick() {
-    setImportError(null);
-    fileInputRef.current?.click();
-  }
-
-  async function handleImportFile(e) {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const result = parsePromptPack(text);
-      if (!result.ok) {
-        setImportError(result.error);
-        return;
-      }
-      onApplyPromptPack(result.data);
-      setImportError(null);
-    } catch {
-      setImportError('Could not read file');
-    }
+  function updateCategory(key, newItems) {
+    current.setConfig((prev) => ({ ...prev, [key]: newItems }));
   }
 
   return (
@@ -147,138 +116,59 @@ export default function EditPromptsModal({
         </div>
 
         <div className="ep-tabs">
-          <button
-            className={`ep-tab ${activeTab === 'images' ? 'ep-tab-active' : ''}`}
-            onClick={() => onTabChange('images')}
-          >
-            Images
-          </button>
-          <button
-            className={`ep-tab ${activeTab === 'conversations' ? 'ep-tab-active' : ''}`}
-            onClick={() => onTabChange('conversations')}
-          >
-            Conversations
-          </button>
+          {Object.entries(TAB_MAP).map(([key, { label }]) => (
+            <button
+              key={key}
+              className={`ep-tab ${activeTab === key ? 'ep-tab-active' : ''}`}
+              onClick={() => onTabChange(key)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="ep-body">
-          {activeTab === 'images' && (
-            <>
-              {/* Section A — Static style */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Static style (always appended)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={promptConfig.staticStyle}
-                  onChange={(e) =>
-                    setPromptConfig((prev) => ({ ...prev, staticStyle: e.target.value }))
-                  }
-                  rows={4}
+          <section className="ep-section">
+            <h3 className="ep-section-label">Static style (always appended)</h3>
+            <textarea
+              className="ep-static-textarea"
+              value={current.config.staticStyle}
+              onChange={(e) =>
+                current.setConfig((prev) => ({ ...prev, staticStyle: e.target.value }))
+              }
+              rows={4}
+            />
+          </section>
+
+          <section className="ep-section">
+            <h3 className="ep-section-label">Random options (one picked per generation)</h3>
+            <div className="ep-categories">
+              {current.categories.map(({ key, label }) => (
+                <CategoryPanel
+                  key={`${activeTab}-${key}`}
+                  label={label}
+                  items={current.config[key]}
+                  onChange={(newItems) => updateCategory(key, newItems)}
                 />
-              </section>
+              ))}
+            </div>
+          </section>
 
-              {/* Section B — Random categories */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Random options (one picked per generation)</h3>
-                <div className="ep-categories">
-                  {IMAGE_CATEGORIES.map(({ key, label }) => (
-                    <CategoryPanel
-                      key={key}
-                      label={label}
-                      items={promptConfig[key]}
-                      onChange={(newItems) => updateImageCategory(key, newItems)}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Section C — Text overlay */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Text overlay</h3>
-                <input
-                  className="ep-overlay-input"
-                  value={textOverlay}
-                  onChange={(e) => setTextOverlay(e.target.value)}
-                  placeholder="Overlay text on the image…"
-                />
-              </section>
-            </>
-          )}
-
-          {activeTab === 'conversations' && (
-            <>
-              {/* Section A — Static instruction */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Static instruction (always sent)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={textPromptConfig.staticInstruction}
-                  onChange={(e) =>
-                    setTextPromptConfig((prev) => ({ ...prev, staticInstruction: e.target.value }))
-                  }
-                  rows={6}
-                />
-              </section>
-
-              {/* Section B — Example conversations */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Example conversations (style guide)</h3>
-                <textarea
-                  className="ep-static-textarea"
-                  value={textPromptConfig.staticExamples}
-                  onChange={(e) =>
-                    setTextPromptConfig((prev) => ({ ...prev, staticExamples: e.target.value }))
-                  }
-                  rows={14}
-                />
-              </section>
-
-              {/* Section C — Random categories */}
-              <section className="ep-section">
-                <h3 className="ep-section-label">Random options (one picked per generation)</h3>
-                <div className="ep-categories">
-                  {TEXT_CATEGORIES.map(({ key, label }) => (
-                    <CategoryPanel
-                      key={key}
-                      label={label}
-                      items={textPromptConfig[key]}
-                      onChange={(newItems) => updateTextCategory(key, newItems)}
-                    />
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
+          <section className="ep-section">
+            <h3 className="ep-section-label">Text overlay</h3>
+            <input
+              className="ep-overlay-input"
+              value={current.overlay}
+              onChange={(e) => current.setOverlay(e.target.value)}
+              placeholder="Overlay text on the image…"
+            />
+          </section>
         </div>
 
-        <div className="ep-footer ep-footer-with-transfer">
-          <div className="ep-footer-row">
-            <div className="ep-footer-actions">
-              <button type="button" className="ep-transfer-btn" onClick={handleExportPrompts}>
-                Export prompts
-              </button>
-              <button type="button" className="ep-transfer-btn" onClick={handleImportPick}>
-                Import prompts
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json,.json"
-                className="ep-import-input"
-                onChange={handleImportFile}
-                aria-hidden
-                tabIndex={-1}
-              />
-            </div>
-            <button type="button" className="ep-done-btn" onClick={onClose}>
-              Done
-            </button>
-          </div>
-          {importError && (
-            <p className="ep-import-error" role="alert">
-              {importError}
-            </p>
-          )}
+        <div className="ep-footer">
+          <button type="button" className="ep-done-btn" onClick={onClose}>
+            Done
+          </button>
         </div>
       </div>
     </div>

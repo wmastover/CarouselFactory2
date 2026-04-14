@@ -2,30 +2,32 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ── Image prompt generation ──────────────────────────────────────
+// ── Image 1 defaults (Day 1: breakup) ────────────────────────────
 
-export const DEFAULT_STATIC_STYLE =
+export const DEFAULT_IMAGE1_OVERLAY = 'Day 1';
+
+export const DEFAULT_IMAGE1_STATIC_STYLE =
   'dark hair, sexy neutral expression, not smiling, lips slightly parted, ' +
   'black or dark clothing showing some cleavage, ' +
   'front camera selfie, very close crop on face and chest, ' +
   'night time, warm dim indoor light, ' +
   'realistic iphone photo, slightly grainy, no retouching, natural skin';
 
-export const DEFAULT_SUBJECT = [
+export const DEFAULT_IMAGE1_SUBJECT = [
   'attractive young woman in her early 20s',
   'young brunette woman with sharp features',
   'confident young woman',
   'striking young woman in her 20s',
 ];
 
-export const DEFAULT_HAIR = [
+export const DEFAULT_IMAGE1_HAIR = [
   'long dark brown hair spread out',
   'voluminous wavy dark hair',
   'straight dark hair loosely framing face',
   'tousled dark brunette hair, slightly messy',
 ];
 
-export const DEFAULT_OUTFIT = [
+export const DEFAULT_IMAGE1_OUTFIT = [
   'black corset top',
   'black bralette, straps visible',
   'tight black low-cut top',
@@ -33,7 +35,7 @@ export const DEFAULT_OUTFIT = [
   'black crop top, slightly off shoulder',
 ];
 
-export const DEFAULT_SETTING = [
+export const DEFAULT_IMAGE1_SETTING = [
   'lying in bed at night, rumpled sheets, dim warm lamp glow',
   'in the passenger seat of a car at night, window behind',
   'in the back seat of a car at night, window behind',
@@ -42,68 +44,174 @@ export const DEFAULT_SETTING = [
   'in the back seat of a car at night, city lights softly blurred outside',
 ];
 
-export const DEFAULT_LIGHTING = [
+export const DEFAULT_IMAGE1_LIGHTING = [
   'warm dim bedside lamp, soft shadows',
   'low warm ambient light, slightly underexposed',
   'dim yellow room light, natural night feel',
   'soft warm glow from off-screen lamp, mostly dark background',
 ];
 
-export const DEFAULT_CAMERA = [
+export const DEFAULT_IMAGE1_CAMERA = [
   'selfie held above looking down, slightly tilted',
   'front camera selfie, very close, candid',
   'selfie angle from slightly above, face and chest filling frame',
   'close front camera crop, slightly grainy, spontaneous',
 ];
 
-export const DEFAULT_EXTRAS = [
+export const DEFAULT_IMAGE1_EXTRAS = [
   'glossy nude lip, heavy lashes, dewy skin',
   'smoky eye, glossy lip',
   'minimal makeup, glossy lip, looking directly into lens',
   'heavy lashes, matte skin',
 ];
 
-const IMAGE_JSON_PROMPT_INSTRUCTION =
+// ── Image 2 defaults (Day 7: slightly better) ────────────────────
+
+export const DEFAULT_IMAGE2_OVERLAY = 'Day 7';
+
+export const DEFAULT_IMAGE2_STATIC_STYLE =
+  'same woman from the reference photo, slightly more put-together, ' +
+  'neutral expression with a hint of calm, not smiling, ' +
+  'realistic iphone photo, slightly grainy, no retouching, natural skin, ' +
+  'front camera selfie, close crop on face and chest, vertical 9:16';
+
+export const DEFAULT_IMAGE2_SETTING = [
+  'sitting by a window in the morning, soft natural light coming in',
+  'on a couch with a blanket, cup of coffee in hand, daytime',
+  'standing in front of a bathroom mirror, morning light',
+  'sitting in a café alone, window light on face',
+  'leaning against a doorframe at home, warm afternoon light',
+];
+
+export const DEFAULT_IMAGE2_MOOD = [
+  'still fragile but starting to pull herself together',
+  'quietly healing, calm but guarded',
+  'slightly better, a flicker of life returning',
+  'pensive but no longer crying, soft determination',
+  'the first day she felt okay waking up',
+];
+
+export const DEFAULT_IMAGE2_OUTFIT = [
+  'oversized grey hoodie, hair loosely tied back',
+  'simple white t-shirt, hair down, minimal effort',
+  'cozy knit sweater, comfortable but cleaner',
+  'casual denim jacket over a plain top',
+  'soft cardigan, understated but presentable',
+];
+
+export const DEFAULT_IMAGE2_LIGHTING = [
+  'soft morning window light, gentle and warm',
+  'natural daylight, slightly overcast feel',
+  'warm golden afternoon light filtering in',
+  'even indoor lighting, daytime ambiance',
+];
+
+// ── Image 3 defaults (Day 100: glow up) ──────────────────────────
+
+export const DEFAULT_IMAGE3_OVERLAY = 'Day 100';
+
+export const DEFAULT_IMAGE3_STATIC_STYLE =
+  'same woman from the reference photo but fully glowed up, ' +
+  'confident radiant expression, slight smirk or soft smile, ' +
+  'glamorous but natural, perfect lighting, ' +
+  'realistic iphone photo, high quality, vertical 9:16';
+
+export const DEFAULT_IMAGE3_SETTING = [
+  'rooftop bar at golden hour, city skyline blurred behind',
+  'getting ready in a well-lit vanity mirror, fairy lights',
+  'at a restaurant table, candlelight and bokeh, night out',
+  'walking down a city street at night, neon reflections',
+  'in the back of an uber, city lights streaking through window',
+  'at a club or lounge, moody coloured lighting',
+];
+
+export const DEFAULT_IMAGE3_OUTFIT = [
+  'sleek black dress, gold jewelry, hair styled',
+  'fitted red top, statement earrings, lips done',
+  'silk cami top, delicate necklace, hair voluminous and styled',
+  'off-shoulder bodycon dress, smoky eye, confident pose',
+  'leather jacket over a going-out top, effortlessly hot',
+];
+
+export const DEFAULT_IMAGE3_MOOD = [
+  'thriving, radiating confidence, completely over it',
+  'that girl energy, unbothered and glowing',
+  'main character moment, she won the breakup',
+  'confident and magnetic, like she forgot he existed',
+  'living her best life, zero regrets',
+];
+
+export const DEFAULT_IMAGE3_LIGHTING = [
+  'golden hour glow, warm and flattering',
+  'moody ambient lighting with warm highlights',
+  'soft ring-light effect, even and glowing',
+  'dramatic side lighting, editorial feel',
+];
+
+// ── Prompt builders ──────────────────────────────────────────────
+
+const IMAGE1_INSTRUCTION =
   'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
   'Follow the JSON scene specification below exactly—every field is mandatory. ' +
   'Interpret subject, hair, outfit, setting, lighting, camera, extras, and staticStyle as one unified photograph, not a list of unrelated ideas.';
 
-function buildImagePromptFromSegments(segments) {
-  const spec = {
-    schemaVersion: 1,
-    scene: {
-      subject: segments.subject,
-      hair: segments.hair,
-      outfit: segments.outfit,
-      setting: segments.setting,
-      lighting: segments.lighting,
-      camera: segments.camera,
-      extras: segments.extras,
-      staticStyle: segments.staticStyle,
-    },
-  };
+const IMAGE2_INSTRUCTION =
+  'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
+  'This is "Day 7" — the SAME woman from the reference photo, one week after a breakup. ' +
+  'She looks slightly better but still a bit fragile. ' +
+  'Match her face, hair color, and general appearance from the reference image exactly. ' +
+  'Follow the JSON scene specification below exactly.';
+
+const IMAGE3_INSTRUCTION =
+  'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
+  'This is "Day 100" — the SAME woman from the reference photo, fully glowed up after a breakup. ' +
+  'She is confident, radiant, and thriving. ' +
+  'Match her face and hair color from the reference image but everything else should be elevated. ' +
+  'Follow the JSON scene specification below exactly.';
+
+function buildJsonBlock(instruction, scene) {
+  const spec = { schemaVersion: 1, scene };
   const json = JSON.stringify(spec, null, 2);
-  return `${IMAGE_JSON_PROMPT_INSTRUCTION}\n\n\`\`\`json\n${json}\n\`\`\``;
+  return `${instruction}\n\n\`\`\`json\n${json}\n\`\`\``;
 }
 
-export function generateImagePrompt(config) {
-  const staticStyle = config?.staticStyle ?? DEFAULT_STATIC_STYLE;
-
+export function generateImage1Prompt(config) {
   const segments = {
-    subject: pick(config?.subject ?? DEFAULT_SUBJECT),
-    hair: pick(config?.hair ?? DEFAULT_HAIR),
-    outfit: pick(config?.outfit ?? DEFAULT_OUTFIT),
-    setting: pick(config?.setting ?? DEFAULT_SETTING),
-    lighting: pick(config?.lighting ?? DEFAULT_LIGHTING),
-    camera: pick(config?.camera ?? DEFAULT_CAMERA),
-    extras: pick(config?.extras ?? DEFAULT_EXTRAS),
-    staticStyle,
+    subject: pick(config?.subject ?? DEFAULT_IMAGE1_SUBJECT),
+    hair: pick(config?.hair ?? DEFAULT_IMAGE1_HAIR),
+    outfit: pick(config?.outfit ?? DEFAULT_IMAGE1_OUTFIT),
+    setting: pick(config?.setting ?? DEFAULT_IMAGE1_SETTING),
+    lighting: pick(config?.lighting ?? DEFAULT_IMAGE1_LIGHTING),
+    camera: pick(config?.camera ?? DEFAULT_IMAGE1_CAMERA),
+    extras: pick(config?.extras ?? DEFAULT_IMAGE1_EXTRAS),
+    staticStyle: config?.staticStyle ?? DEFAULT_IMAGE1_STATIC_STYLE,
   };
-
-  const prompt = buildImagePromptFromSegments(segments);
-
-  return { prompt, segments };
+  return { prompt: buildJsonBlock(IMAGE1_INSTRUCTION, segments), segments };
 }
+
+export function generateImage2Prompt(config) {
+  const segments = {
+    setting: pick(config?.setting ?? DEFAULT_IMAGE2_SETTING),
+    mood: pick(config?.mood ?? DEFAULT_IMAGE2_MOOD),
+    outfit: pick(config?.outfit ?? DEFAULT_IMAGE2_OUTFIT),
+    lighting: pick(config?.lighting ?? DEFAULT_IMAGE2_LIGHTING),
+    staticStyle: config?.staticStyle ?? DEFAULT_IMAGE2_STATIC_STYLE,
+  };
+  return { prompt: buildJsonBlock(IMAGE2_INSTRUCTION, segments), segments };
+}
+
+export function generateImage3Prompt(config) {
+  const segments = {
+    setting: pick(config?.setting ?? DEFAULT_IMAGE3_SETTING),
+    outfit: pick(config?.outfit ?? DEFAULT_IMAGE3_OUTFIT),
+    mood: pick(config?.mood ?? DEFAULT_IMAGE3_MOOD),
+    lighting: pick(config?.lighting ?? DEFAULT_IMAGE3_LIGHTING),
+    staticStyle: config?.staticStyle ?? DEFAULT_IMAGE3_STATIC_STYLE,
+  };
+  return { prompt: buildJsonBlock(IMAGE3_INSTRUCTION, segments), segments };
+}
+
+export const generateImagePrompt = generateImage1Prompt;
 
 // ── Text / iMessage conversation meta-prompt generation ──────────
 

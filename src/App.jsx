@@ -1,36 +1,45 @@
 import { useState, useRef, useEffect } from 'react';
-import { KeyRound } from 'lucide-react';
 import JSZip from 'jszip';
 import ImageGenCard from './components/ImageGenCard';
-import TextGenCard from './components/TextGenCard';
 import SinglePhone from './components/SinglePhone';
 import EditPromptsModal from './components/EditPromptsModal';
-import ApiKeyModal from './components/ApiKeyModal';
 import { Button } from './components/ui/button';
 import { generateEntrySuggestions } from './lib/entryGenApi';
-import { getApiKey as getOpenRouterApiKey } from './lib/apiKey.js';
 import {
-  DEFAULT_STATIC_STYLE,
-  DEFAULT_SUBJECT,
-  DEFAULT_HAIR,
-  DEFAULT_OUTFIT,
-  DEFAULT_SETTING,
-  DEFAULT_LIGHTING,
-  DEFAULT_CAMERA,
-  DEFAULT_EXTRAS,
-  DEFAULT_STATIC_INSTRUCTION,
-  DEFAULT_STATIC_EXAMPLES,
-  DEFAULT_DYNAMIC,
-  DEFAULT_TWIST,
-  DEFAULT_TONE,
-  DEFAULT_OPENER_STYLE,
+  DEFAULT_IMAGE1_OVERLAY,
+  DEFAULT_IMAGE2_OVERLAY,
+  DEFAULT_IMAGE3_OVERLAY,
+  DEFAULT_IMAGE1_SUBJECT,
+  DEFAULT_IMAGE1_HAIR,
+  DEFAULT_IMAGE1_OUTFIT,
+  DEFAULT_IMAGE1_SETTING,
+  DEFAULT_IMAGE1_LIGHTING,
+  DEFAULT_IMAGE1_CAMERA,
+  DEFAULT_IMAGE1_EXTRAS,
+  DEFAULT_IMAGE1_STATIC_STYLE,
+  DEFAULT_IMAGE2_SETTING,
+  DEFAULT_IMAGE2_MOOD,
+  DEFAULT_IMAGE2_OUTFIT,
+  DEFAULT_IMAGE2_LIGHTING,
+  DEFAULT_IMAGE2_STATIC_STYLE,
+  DEFAULT_IMAGE3_SETTING,
+  DEFAULT_IMAGE3_OUTFIT,
+  DEFAULT_IMAGE3_MOOD,
+  DEFAULT_IMAGE3_LIGHTING,
+  DEFAULT_IMAGE3_STATIC_STYLE,
+  generateImage1Prompt,
+  generateImage2Prompt,
+  generateImage3Prompt,
 } from './lib/promptGen';
 import entriesLogo from './assets/entries-logo.png';
 import './App.css';
 
-const LS_PROMPT_CONFIG = 'cf_promptConfig';
-const LS_TEXT_OVERLAY = 'cf_textOverlay';
-const LS_TEXT_PROMPT_CONFIG = 'cf_textPromptConfig';
+const LS_IMG1_CONFIG = 'cf_img1Config';
+const LS_IMG1_OVERLAY = 'cf_img1Overlay';
+const LS_IMG2_CONFIG = 'cf_img2Config';
+const LS_IMG2_OVERLAY = 'cf_img2Overlay';
+const LS_IMG3_CONFIG = 'cf_img3Config';
+const LS_IMG3_OVERLAY = 'cf_img3Overlay';
 
 function loadFromStorage(key, fallback) {
   try {
@@ -57,152 +66,172 @@ async function urlToBlob(url) {
 }
 
 export default function App() {
-  // Image prompt config + overlay (hydrated from localStorage)
-  const [promptConfig, setPromptConfig] = useState(() =>
-    loadFromStorage(LS_PROMPT_CONFIG, () => ({
-      staticStyle: DEFAULT_STATIC_STYLE,
-      subject: [...DEFAULT_SUBJECT],
-      hair: [...DEFAULT_HAIR],
-      outfit: [...DEFAULT_OUTFIT],
-      setting: [...DEFAULT_SETTING],
-      lighting: [...DEFAULT_LIGHTING],
-      camera: [...DEFAULT_CAMERA],
-      extras: [...DEFAULT_EXTRAS],
+  // ── Image 1 config (breakup / day 1) ─────────────────────────
+  const [img1Config, setImg1Config] = useState(() =>
+    loadFromStorage(LS_IMG1_CONFIG, () => ({
+      staticStyle: DEFAULT_IMAGE1_STATIC_STYLE,
+      subject: [...DEFAULT_IMAGE1_SUBJECT],
+      hair: [...DEFAULT_IMAGE1_HAIR],
+      outfit: [...DEFAULT_IMAGE1_OUTFIT],
+      setting: [...DEFAULT_IMAGE1_SETTING],
+      lighting: [...DEFAULT_IMAGE1_LIGHTING],
+      camera: [...DEFAULT_IMAGE1_CAMERA],
+      extras: [...DEFAULT_IMAGE1_EXTRAS],
     }))
   );
-  const [textOverlay, setTextOverlay] = useState(() =>
-    loadFromStorage(LS_TEXT_OVERLAY, "Sometimes you just gotta read a man's text and go about your day")
+  const [img1Overlay, setImg1Overlay] = useState(() =>
+    loadFromStorage(LS_IMG1_OVERLAY, DEFAULT_IMAGE1_OVERLAY)
   );
-  const [textPromptConfig, setTextPromptConfig] = useState(() =>
-    loadFromStorage(LS_TEXT_PROMPT_CONFIG, () => ({
-      staticInstruction: DEFAULT_STATIC_INSTRUCTION,
-      staticExamples: DEFAULT_STATIC_EXAMPLES,
-      dynamic: [...DEFAULT_DYNAMIC],
-      twist: [...DEFAULT_TWIST],
-      tone: [...DEFAULT_TONE],
-      openerStyle: [...DEFAULT_OPENER_STYLE],
+
+  // ── Image 2 config (slightly better / day 7) ─────────────────
+  const [img2Config, setImg2Config] = useState(() =>
+    loadFromStorage(LS_IMG2_CONFIG, () => ({
+      staticStyle: DEFAULT_IMAGE2_STATIC_STYLE,
+      setting: [...DEFAULT_IMAGE2_SETTING],
+      mood: [...DEFAULT_IMAGE2_MOOD],
+      outfit: [...DEFAULT_IMAGE2_OUTFIT],
+      lighting: [...DEFAULT_IMAGE2_LIGHTING],
     }))
   );
+  const [img2Overlay, setImg2Overlay] = useState(() =>
+    loadFromStorage(LS_IMG2_OVERLAY, DEFAULT_IMAGE2_OVERLAY)
+  );
 
-  useEffect(() => {
-    localStorage.setItem(LS_PROMPT_CONFIG, JSON.stringify(promptConfig));
-  }, [promptConfig]);
+  // ── Image 3 config (glow up / day 100) ───────────────────────
+  const [img3Config, setImg3Config] = useState(() =>
+    loadFromStorage(LS_IMG3_CONFIG, () => ({
+      staticStyle: DEFAULT_IMAGE3_STATIC_STYLE,
+      setting: [...DEFAULT_IMAGE3_SETTING],
+      outfit: [...DEFAULT_IMAGE3_OUTFIT],
+      mood: [...DEFAULT_IMAGE3_MOOD],
+      lighting: [...DEFAULT_IMAGE3_LIGHTING],
+    }))
+  );
+  const [img3Overlay, setImg3Overlay] = useState(() =>
+    loadFromStorage(LS_IMG3_OVERLAY, DEFAULT_IMAGE3_OVERLAY)
+  );
 
-  useEffect(() => {
-    localStorage.setItem(LS_TEXT_OVERLAY, JSON.stringify(textOverlay));
-  }, [textOverlay]);
-
-  useEffect(() => {
-    localStorage.setItem(LS_TEXT_PROMPT_CONFIG, JSON.stringify(textPromptConfig));
-  }, [textPromptConfig]);
+  // Persist to localStorage
+  useEffect(() => { localStorage.setItem(LS_IMG1_CONFIG, JSON.stringify(img1Config)); }, [img1Config]);
+  useEffect(() => { localStorage.setItem(LS_IMG1_OVERLAY, JSON.stringify(img1Overlay)); }, [img1Overlay]);
+  useEffect(() => { localStorage.setItem(LS_IMG2_CONFIG, JSON.stringify(img2Config)); }, [img2Config]);
+  useEffect(() => { localStorage.setItem(LS_IMG2_OVERLAY, JSON.stringify(img2Overlay)); }, [img2Overlay]);
+  useEffect(() => { localStorage.setItem(LS_IMG3_CONFIG, JSON.stringify(img3Config)); }, [img3Config]);
+  useEffect(() => { localStorage.setItem(LS_IMG3_OVERLAY, JSON.stringify(img3Overlay)); }, [img3Overlay]);
 
   const [editPromptsOpen, setEditPromptsOpen] = useState(false);
-  const [editPromptsTab, setEditPromptsTab] = useState('images');
-  const [editPromptsMountKey, setEditPromptsMountKey] = useState(0);
-  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
-  const [apiKeyModalContentKey, setApiKeyModalContentKey] = useState(0);
-  const apiKeyModalWasOpenRef = useRef(false);
+  const [editPromptsTab, setEditPromptsTab] = useState('image1');
 
-  function openApiKeyModal() {
-    if (!apiKeyModalWasOpenRef.current) {
-      setApiKeyModalContentKey((k) => k + 1);
-    }
-    apiKeyModalWasOpenRef.current = true;
-    setApiKeyModalOpen(true);
-  }
+  // ── Row 1 state ───────────────────────────────────────────────
+  const [selectedImg1Url, setSelectedImg1Url] = useState(null);
+  const [selectedImg1Index, setSelectedImg1Index] = useState(null);
+  const [img1RowKey, setImg1RowKey] = useState(0);
 
-  function closeApiKeyModal() {
-    apiKeyModalWasOpenRef.current = false;
-    setApiKeyModalOpen(false);
-  }
+  // ── Row 2 state ───────────────────────────────────────────────
+  const [selectedImg2Url, setSelectedImg2Url] = useState(null);
+  const [selectedImg2Index, setSelectedImg2Index] = useState(null);
+  const [img2RowKey, setImg2RowKey] = useState(0);
 
-  useEffect(() => {
-    if (!getOpenRouterApiKey()) {
-      if (!apiKeyModalWasOpenRef.current) {
-        setApiKeyModalContentKey((k) => k + 1);
-      }
-      apiKeyModalWasOpenRef.current = true;
-      setApiKeyModalOpen(true);
-    }
-  }, []);
+  // ── Row 3 state ───────────────────────────────────────────────
+  const [selectedImg3Url, setSelectedImg3Url] = useState(null);
+  const [selectedImg3Index, setSelectedImg3Index] = useState(null);
+  const [img3RowKey, setImg3RowKey] = useState(0);
 
-  // Image row
-  const [selectedImgUrl, setSelectedImgUrl] = useState(null);
-  const [selectedImgIndex, setSelectedImgIndex] = useState(null);
-  const [imageRowKey, setImageRowKey] = useState(0);
-
-  // Conversation row
-  const [selectedConvImage, setSelectedConvImage] = useState(null);
-  const [selectedConvIndex, setSelectedConvIndex] = useState(null);
-  const [convRowKey, setConvRowKey] = useState(0);
-
-  // Entry suggestions
+  // ── Entry suggestions (triggered by row 3 selection) ─────────
   const [entrySuggestions, setEntrySuggestions] = useState(null);
   const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState(null);
 
-  // Entry phones (3 windows)
+  // ── Entry phones ──────────────────────────────────────────────
   const [selectedEntryIndex, setSelectedEntryIndex] = useState(null);
   const phoneRefs = useRef([]);
 
-  // Download state
+  // ── Download ──────────────────────────────────────────────────
   const [downloading, setDownloading] = useState(false);
 
-  function handleImgSelect(url, index) {
-    setSelectedImgUrl(url);
-    setSelectedImgIndex(index);
+  // ── Handlers ──────────────────────────────────────────────────
+
+  function handleImg1Select(url, index) {
+    setSelectedImg1Url(url);
+    setSelectedImg1Index(index);
+    // Reset downstream selections when row 1 changes
+    setSelectedImg2Url(null);
+    setSelectedImg2Index(null);
+    setSelectedImg3Url(null);
+    setSelectedImg3Index(null);
+    setEntrySuggestions(null);
+    setSuggestionsError(null);
+    setIsSuggestionsLoading(false);
+    setSelectedEntryIndex(null);
+    // Bump row keys so rows 2 & 3 remount and regenerate with the new reference
+    setImg2RowKey((k) => k + 1);
+    setImg3RowKey((k) => k + 1);
   }
 
-  async function handleConvSelect(dataUrl, index, messages) {
-    setSelectedConvImage(dataUrl);
-    setSelectedConvIndex(index);
+  function handleImg2Select(url, index) {
+    setSelectedImg2Url(url);
+    setSelectedImg2Index(index);
+  }
+
+  async function handleImg3Select(url, index) {
+    setSelectedImg3Url(url);
+    setSelectedImg3Index(index);
     setEntrySuggestions(null);
     setSuggestionsError(null);
     setSelectedEntryIndex(null);
 
-    if (messages && messages.length > 0) {
-      setIsSuggestionsLoading(true);
-      try {
-        const suggestions = await generateEntrySuggestions(messages);
-        setEntrySuggestions(suggestions);
-      } catch (err) {
-        setSuggestionsError(err.message || 'Could not generate entry suggestions.');
-      } finally {
-        setIsSuggestionsLoading(false);
-      }
+    setIsSuggestionsLoading(true);
+    try {
+      const suggestions = await generateEntrySuggestions();
+      setEntrySuggestions(suggestions);
+    } catch (err) {
+      setSuggestionsError(err.message || 'Could not generate entry suggestions.');
+    } finally {
+      setIsSuggestionsLoading(false);
     }
   }
 
-
   function openEditPrompts(tab) {
     setEditPromptsTab(tab);
-    setEditPromptsMountKey((k) => k + 1);
     setEditPromptsOpen(true);
   }
 
-  function applyPromptPack({ promptConfig: nextPc, textOverlay: nextOverlay, textPromptConfig: nextTpc }) {
-    setPromptConfig(nextPc);
-    setTextOverlay(nextOverlay);
-    setTextPromptConfig(nextTpc);
-  }
-
-  function regenerateImageRow() {
-    setImageRowKey((k) => k + 1);
-    setSelectedImgUrl(null);
-    setSelectedImgIndex(null);
-  }
-
-  function regenerateConvRow() {
-    setConvRowKey((k) => k + 1);
-    setSelectedConvImage(null);
-    setSelectedConvIndex(null);
+  function regenerateRow1() {
+    setImg1RowKey((k) => k + 1);
+    setSelectedImg1Url(null);
+    setSelectedImg1Index(null);
+    setSelectedImg2Url(null);
+    setSelectedImg2Index(null);
+    setSelectedImg3Url(null);
+    setSelectedImg3Index(null);
     setEntrySuggestions(null);
     setSuggestionsError(null);
     setIsSuggestionsLoading(false);
     setSelectedEntryIndex(null);
   }
 
-  const canDownload = !!(selectedImgUrl && selectedConvImage && selectedEntryIndex !== null);
+  function regenerateRow2() {
+    setImg2RowKey((k) => k + 1);
+    setSelectedImg2Url(null);
+    setSelectedImg2Index(null);
+  }
+
+  function regenerateRow3() {
+    setImg3RowKey((k) => k + 1);
+    setSelectedImg3Url(null);
+    setSelectedImg3Index(null);
+    setEntrySuggestions(null);
+    setSuggestionsError(null);
+    setIsSuggestionsLoading(false);
+    setSelectedEntryIndex(null);
+  }
+
+  const canDownload = !!(
+    selectedImg1Url &&
+    selectedImg2Url &&
+    selectedImg3Url &&
+    selectedEntryIndex !== null
+  );
 
   async function handleDownloadCarousel() {
     if (!canDownload || !phoneRefs.current[selectedEntryIndex]) return;
@@ -216,15 +245,16 @@ export default function App() {
       const zip = new JSZip();
       const folder = zip.folder(`Carousel ${n}`);
 
-      const imgBlob = await urlToBlob(selectedImgUrl);
-      folder.file('1-image.png', imgBlob);
-
-      folder.file('2-conversation.png', dataUrlToBlob(selectedConvImage));
-      folder.file('3-entry.png', dataUrlToBlob(phoneScreenshot));
+      folder.file('1-day1.png', await urlToBlob(selectedImg1Url));
+      folder.file('2-day7.png', await urlToBlob(selectedImg2Url));
+      folder.file('3-day100.png', await urlToBlob(selectedImg3Url));
+      folder.file('4-entry.png', dataUrlToBlob(phoneScreenshot));
 
       const selectedEntry = entrySuggestions?.[selectedEntryIndex];
       const detailsLines = [
-        `Hook: ${textOverlay}`,
+        `Slide 1 caption: ${img1Overlay}`,
+        `Slide 2 caption: ${img2Overlay}`,
+        `Slide 3 caption: ${img3Overlay}`,
         '',
         `Entry Title: ${selectedEntry?.title ?? ''}`,
         '',
@@ -250,39 +280,32 @@ export default function App() {
   }
 
   const steps = [
-    { label: 'Image selected', done: !!selectedImgUrl },
-    { label: 'Conversation selected', done: !!selectedConvImage },
+    { label: 'Day 1 selected', done: !!selectedImg1Url },
+    { label: 'Day 7 selected', done: !!selectedImg2Url },
+    { label: 'Day 100 selected', done: !!selectedImg3Url },
     { label: 'Entry selected', done: selectedEntryIndex !== null },
   ];
 
   return (
     <div className="min-h-screen bg-[#e8e5e0] flex flex-col">
-      {/* Page header */}
-      <header className="flex items-center justify-center py-8 flex-shrink-0 px-8 relative min-h-[56px]">
-        <button
-          type="button"
-          className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center p-2 rounded-lg text-[#1a1a1a] hover:bg-black/5 transition-colors"
-          onClick={openApiKeyModal}
-          aria-label="OpenRouter API key"
-        >
-          <KeyRound size={22} strokeWidth={2} aria-hidden />
-        </button>
+      <header className="flex items-center justify-center py-8 flex-shrink-0">
         <img src={entriesLogo} alt="Entries" className="h-10 w-auto" />
       </header>
 
       <main className="flex flex-col gap-12 pb-16 px-8">
-        {/* Row 1 — Image generation */}
+
+        {/* Row 1 — Day 1: breakup */}
         <section>
           <div className="row-header">
             <h2 className="row-label">
-              Images
-              <span className="row-label-hint">click one to use in your carousel</span>
+              Day 1
+              <span className="row-label-hint">choose your character — rows 2 &amp; 3 will match her</span>
             </h2>
             <div className="row-header-actions">
-              <button className="row-regen-btn" onClick={() => openEditPrompts('images')}>
+              <button className="row-regen-btn" onClick={() => openEditPrompts('image1')}>
                 ✎ Edit prompts
               </button>
-              <button className="row-regen-btn" onClick={regenerateImageRow}>
+              <button className="row-regen-btn" onClick={regenerateRow1}>
                 ↺ Regenerate row
               </button>
             </div>
@@ -290,60 +313,122 @@ export default function App() {
           <div className="gen-row">
             {[0, 1, 2].map((i) => (
               <ImageGenCard
-                key={`${imageRowKey}-${i}`}
-                isSelected={selectedImgIndex === i}
-                onSelect={(url) => handleImgSelect(url, i)}
-                promptConfig={promptConfig}
-                textOverlay={textOverlay}
+                key={`img1-${img1RowKey}-${i}`}
+                isSelected={selectedImg1Index === i}
+                onSelect={(url) => handleImg1Select(url, i)}
+                promptConfig={img1Config}
+                textOverlay={img1Overlay}
+                promptGenerator={generateImage1Prompt}
               />
             ))}
           </div>
         </section>
 
-        {/* Row 2 — Text / conversation generation */}
+        {/* Row 2 — Day 7: slightly better */}
         <section>
           <div className="row-header">
             <h2 className="row-label">
-              Conversations
-              <span className="row-label-hint">click one to use as your photo</span>
+              Day 7
+              <span className="row-label-hint">
+                {selectedImg1Url
+                  ? 'same woman, slightly better'
+                  : 'select a Day 1 image first'}
+              </span>
             </h2>
-            <div className="row-header-actions">
-              <button className="row-regen-btn" onClick={() => openEditPrompts('conversations')}>
-                ✎ Edit prompts
-              </button>
-              <button className="row-regen-btn" onClick={regenerateConvRow}>
-                ↺ Regenerate row
-              </button>
+            {selectedImg1Url && (
+              <div className="row-header-actions">
+                <button className="row-regen-btn" onClick={() => openEditPrompts('image2')}>
+                  ✎ Edit prompts
+                </button>
+                <button className="row-regen-btn" onClick={regenerateRow2}>
+                  ↺ Regenerate row
+                </button>
+              </div>
+            )}
+          </div>
+          {selectedImg1Url ? (
+            <div className="gen-row">
+              {[0, 1, 2].map((i) => (
+                <ImageGenCard
+                  key={`img2-${img2RowKey}-${selectedImg1Url.slice(-12)}-${i}`}
+                  isSelected={selectedImg2Index === i}
+                  onSelect={(url) => handleImg2Select(url, i)}
+                  promptConfig={img2Config}
+                  textOverlay={img2Overlay}
+                  referenceImageUrl={selectedImg1Url}
+                  promptGenerator={generateImage2Prompt}
+                />
+              ))}
             </div>
-          </div>
-          <div className="gen-row">
-            {[0, 1, 2].map((i) => (
-              <TextGenCard
-                key={`${convRowKey}-${i}`}
-                isSelected={selectedConvIndex === i}
-                onSelect={(dataUrl, messages) => handleConvSelect(dataUrl, i, messages)}
-                textPromptConfig={textPromptConfig}
-              />
-            ))}
-          </div>
+          ) : (
+            <div className="gen-row-placeholder">
+              Select a Day 1 image above to unlock this row
+            </div>
+          )}
         </section>
 
-        {/* Row 3 — Entry phones, one per AI suggestion */}
+        {/* Row 3 — Day 100: glow up */}
+        <section>
+          <div className="row-header">
+            <h2 className="row-label">
+              Day 100
+              <span className="row-label-hint">
+                {selectedImg1Url
+                  ? 'same woman, full glow up'
+                  : 'select a Day 1 image first'}
+              </span>
+            </h2>
+            {selectedImg1Url && (
+              <div className="row-header-actions">
+                <button className="row-regen-btn" onClick={() => openEditPrompts('image3')}>
+                  ✎ Edit prompts
+                </button>
+                <button className="row-regen-btn" onClick={regenerateRow3}>
+                  ↺ Regenerate row
+                </button>
+              </div>
+            )}
+          </div>
+          {selectedImg1Url ? (
+            <div className="gen-row">
+              {[0, 1, 2].map((i) => (
+                <ImageGenCard
+                  key={`img3-${img3RowKey}-${selectedImg1Url.slice(-12)}-${i}`}
+                  isSelected={selectedImg3Index === i}
+                  onSelect={(url) => handleImg3Select(url, i)}
+                  promptConfig={img3Config}
+                  textOverlay={img3Overlay}
+                  referenceImageUrl={selectedImg1Url}
+                  promptGenerator={generateImage3Prompt}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="gen-row-placeholder">
+              Select a Day 1 image above to unlock this row
+            </div>
+          )}
+        </section>
+
+        {/* Row 4 — Entries */}
         <section>
           <div className="row-header">
             <h2 className="row-label">
               Entries
-              {!isSuggestionsLoading && entrySuggestions && (
-                <span className="row-label-hint">click one to use in your carousel</span>
-              )}
               {isSuggestionsLoading && (
                 <span className="row-label-hint">generating entry ideas…</span>
               )}
-              {suggestionsError && (
-                <span className="row-label-hint text-red-700">{suggestionsError}</span>
+              {!isSuggestionsLoading && entrySuggestions && (
+                <span className="row-label-hint">click one to use in your carousel</span>
+              )}
+              {!isSuggestionsLoading && !entrySuggestions && !suggestionsError && (
+                <span className="row-label-hint">select a Day 100 image to generate entries</span>
               )}
             </h2>
           </div>
+          {suggestionsError && (
+            <p className="text-sm text-red-500 mb-4 text-center">{suggestionsError}</p>
+          )}
           <div className="gen-row">
             {[0, 1, 2].map((i) => (
               <div
@@ -353,10 +438,9 @@ export default function App() {
               >
                 <SinglePhone
                   ref={(el) => { phoneRefs.current[i] = el; }}
-                  injectedPhoto={selectedConvImage}
+                  injectedPhoto={selectedImg3Url}
                   injectedTitle={entrySuggestions?.[i]?.title ?? null}
                   injectedBody={entrySuggestions?.[i]?.body ?? null}
-                  onOpenApiKey={openApiKeyModal}
                 />
               </div>
             ))}
@@ -387,24 +471,22 @@ export default function App() {
       </main>
 
       <EditPromptsModal
-        key={editPromptsMountKey}
         open={editPromptsOpen}
         onClose={() => setEditPromptsOpen(false)}
         activeTab={editPromptsTab}
         onTabChange={setEditPromptsTab}
-        promptConfig={promptConfig}
-        setPromptConfig={setPromptConfig}
-        textOverlay={textOverlay}
-        setTextOverlay={setTextOverlay}
-        textPromptConfig={textPromptConfig}
-        setTextPromptConfig={setTextPromptConfig}
-        onApplyPromptPack={applyPromptPack}
-      />
-
-      <ApiKeyModal
-        open={apiKeyModalOpen}
-        onClose={closeApiKeyModal}
-        contentKey={apiKeyModalContentKey}
+        img1Config={img1Config}
+        setImg1Config={setImg1Config}
+        img1Overlay={img1Overlay}
+        setImg1Overlay={setImg1Overlay}
+        img2Config={img2Config}
+        setImg2Config={setImg2Config}
+        img2Overlay={img2Overlay}
+        setImg2Overlay={setImg2Overlay}
+        img3Config={img3Config}
+        setImg3Config={setImg3Config}
+        img3Overlay={img3Overlay}
+        setImg3Overlay={setImg3Overlay}
       />
     </div>
   );

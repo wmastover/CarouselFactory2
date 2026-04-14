@@ -1,5 +1,3 @@
-import { getApiKey } from './apiKey.js';
-
 const MODEL = 'google/gemini-2.0-flash-001';
 
 const ENTRY_SUGGESTIONS_TOOL = {
@@ -90,9 +88,9 @@ function pick(arr) {
  * @returns {Promise<Array<{title: string, body: string}>>}
  */
 export async function generateEntrySuggestions() {
-  const apiKey = getApiKey();
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (!apiKey) {
-    throw new Error('No OpenRouter API key set. Add one via the key icon in the header.');
+    throw new Error('VITE_OPENROUTER_API_KEY is not set.');
   }
 
   const milestone = pick(MILESTONES);
