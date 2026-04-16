@@ -198,7 +198,6 @@ export default function App() {
   }
 
   function resetAllPromptsToDefaults() {
-    if (!window.confirm('Reset all prompts to defaults? Your current edits will be replaced.')) return;
     const d = getFreshDefaultPromptState();
     setImg1Config(d.img1Config);
     setImg1Overlay(d.img1Overlay);

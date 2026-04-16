@@ -1715,6 +1715,43 @@
   color: #b91c1c;
 }
 
+.ep-reset-all-confirm {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e7c28c;
+  background: #fffbf0;
+}
+
+.ep-reset-all-confirm-msg {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #713f12;
+}
+
+.ep-reset-all-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ep-reset-all-confirm-danger {
+  background: #7f1d1d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.ep-reset-all-confirm-danger:hover {
+  background: #991b1b;
+}
+
 .ep-done-btn {
   background: #1a1a1a;
   color: #fff;

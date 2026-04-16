@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { buildPromptPack, parsePromptPack } from '../lib/promptPack';
 import { DEFAULT_ENTRY_SUGGESTIONS_SYSTEM_PROMPT } from '../lib/entryGenApi';
 import {
@@ -189,6 +189,11 @@ export default function EditPromptsModal({
 }) {
   const fileInputRef = useRef(null);
   const [importError, setImportError] = useState(null);
+  const [resetAllPending, setResetAllPending] = useState(false);
+
+  useEffect(() => {
+    if (!open) setResetAllPending(false);
+  }, [open]);
 
   if (!open) return null;
 
@@ -475,7 +480,15 @@ export default function EditPromptsModal({
               <button type="button" className="ep-transfer-btn" onClick={handleImportPick}>
                 Import prompts
               </button>
-              <button type="button" className="ep-transfer-btn" onClick={onResetAllPrompts}>
+              <button
+                type="button"
+                className="ep-transfer-btn"
+                onClick={() => {
+                  setImportError(null);
+                  setResetAllPending(true);
+                }}
+                disabled={resetAllPending}
+              >
                 Reset all to defaults
               </button>
               <input
@@ -492,6 +505,37 @@ export default function EditPromptsModal({
               Done
             </button>
           </div>
+          {resetAllPending && (
+            <div
+              className="ep-reset-all-confirm"
+              role="group"
+              aria-label="Confirm reset all prompts"
+            >
+              <p className="ep-reset-all-confirm-msg">
+                Replace every prompt and overlay with the built-in defaults? Your current edits will
+                be lost.
+              </p>
+              <div className="ep-reset-all-confirm-actions">
+                <button
+                  type="button"
+                  className="ep-transfer-btn"
+                  onClick={() => setResetAllPending(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="ep-reset-all-confirm-danger"
+                  onClick={() => {
+                    onResetAllPrompts();
+                    setResetAllPending(false);
+                  }}
+                >
+                  Reset everything
+                </button>
+              </div>
+            </div>
+          )}
           {importError && (
             <p className="ep-import-error" role="alert">
               {importError}
