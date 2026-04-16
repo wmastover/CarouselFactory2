@@ -1,5 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { buildPromptPack, parsePromptPack } from '../lib/promptPack';
+import {
+  readSavedPromptSetups,
+  upsertSavedPromptSetup,
+  deleteSavedPromptSetup,
+} from '../lib/promptSetupsStorage';
 import { DEFAULT_ENTRY_SUGGESTIONS_SYSTEM_PROMPT } from '../lib/entryGenApi';
 import {
   DEFAULT_IMAGE1_SUBJECT,
@@ -190,10 +195,78 @@ export default function EditPromptsModal({
   const fileInputRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [resetAllPending, setResetAllPending] = useState(false);
+  const [setupListRevision, setSetupListRevision] = useState(0);
+  const [selectedSetupId, setSelectedSetupId] = useState('');
+  const [setupNameDraft, setSetupNameDraft] = useState('');
 
   useEffect(() => {
-    if (!open) setResetAllPending(false);
+    if (!open) {
+      queueMicrotask(() => setResetAllPending(false));
+    }
   }, [open]);
+
+  const savedSetups = useMemo(() => {
+    if (!open) return [];
+    void setupListRevision;
+    return readSavedPromptSetups()
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [open, setupListRevision]);
+
+  const selectSetupId = savedSetups.some((s) => s.id === selectedSetupId)
+    ? selectedSetupId
+    : '';
+
+  function handleSaveLocalSetup() {
+    setImportError(null);
+    const pack = buildPromptPack({
+      img1Config,
+      img1Overlay,
+      img2Config,
+      img2Overlay,
+      img3Config,
+      img3Overlay,
+      textPromptConfig,
+      entryPromptConfig,
+    });
+    const result = upsertSavedPromptSetup(setupNameDraft, pack);
+    if (!result.ok) {
+      setImportError(result.error);
+      return;
+    }
+    setSetupListRevision((r) => r + 1);
+    const trimmed = setupNameDraft.trim();
+    const list = result.setups.slice().sort((a, b) => a.name.localeCompare(b.name));
+    const entry = list.find((s) => s.name === trimmed);
+    if (entry) setSelectedSetupId(entry.id);
+  }
+
+  function handleLoadLocalSetup() {
+    setImportError(null);
+    const setup = savedSetups.find((s) => s.id === selectSetupId);
+    if (!setup) {
+      setImportError('Choose a saved setup to load');
+      return;
+    }
+    const result = parsePromptPack(setup.pack);
+    if (!result.ok) {
+      setImportError(result.error);
+      return;
+    }
+    onApplyPromptPack(result.data);
+    setImportError(null);
+  }
+
+  function handleDeleteLocalSetup() {
+    setImportError(null);
+    if (!selectSetupId) {
+      setImportError('Choose a saved setup to delete');
+      return;
+    }
+    deleteSavedPromptSetup(selectSetupId);
+    setSetupListRevision((r) => r + 1);
+    setSelectedSetupId('');
+  }
 
   if (!open) return null;
 
@@ -472,6 +545,49 @@ export default function EditPromptsModal({
         </div>
 
         <div className="ep-footer ep-footer-with-transfer">
+          <div className="ep-setups-row">
+            <label className="ep-setups-label" htmlFor="ep-saved-setup-select">
+              Saved setups
+            </label>
+            <div className="ep-setups-controls">
+              <select
+                id="ep-saved-setup-select"
+                className="ep-setups-select"
+                value={selectSetupId}
+                onChange={(e) => setSelectedSetupId(e.target.value)}
+              >
+                <option value="">Choose a saved setup…</option>
+                {savedSetups.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className="ep-transfer-btn" onClick={handleLoadLocalSetup}>
+                Load
+              </button>
+              <button
+                type="button"
+                className="ep-transfer-btn ep-transfer-btn-muted"
+                onClick={handleDeleteLocalSetup}
+                disabled={!selectSetupId}
+              >
+                Delete
+              </button>
+              <input
+                type="text"
+                className="ep-setups-name-input"
+                placeholder="Setup name"
+                value={setupNameDraft}
+                onChange={(e) => setSetupNameDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveLocalSetup()}
+                aria-label="Setup name"
+              />
+              <button type="button" className="ep-transfer-btn" onClick={handleSaveLocalSetup}>
+                Save
+              </button>
+            </div>
+          </div>
           <div className="ep-footer-row">
             <div className="ep-footer-actions">
               <button type="button" className="ep-transfer-btn" onClick={handleExportPrompts}>

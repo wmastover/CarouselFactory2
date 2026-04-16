@@ -1687,6 +1687,72 @@
   flex-wrap: wrap;
 }
 
+.ep-setups-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 2px;
+}
+
+.ep-setups-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.02em;
+}
+
+.ep-setups-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ep-setups-select {
+  min-width: 160px;
+  max-width: 100%;
+  font-size: 13px;
+  color: #1a1a1a;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ep-setups-select:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.ep-setups-name-input {
+  min-width: 120px;
+  flex: 1 1 140px;
+  font-size: 13px;
+  color: #1a1a1a;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.ep-setups-name-input:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.ep-transfer-btn-muted {
+  color: #666;
+}
+
+.ep-transfer-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .ep-transfer-btn {
   background: #fff;
   color: #1a1a1a;
