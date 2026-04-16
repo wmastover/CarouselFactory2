@@ -143,12 +143,104 @@ function renderWithRedactions(text, fieldId, redactions, onUnredact, redactMode)
   return parts;
 }
 
+/** Tap to edit; same typography as read-only (iMessage-style contentEditable). */
+function ClickToEditText({ tag, className, value, onCommit, multiline }) {
+  const Tag = tag;
+  const [editing, setEditing] = useState(false);
+  const editRef = useRef(null);
+
+  useEffect(() => {
+    if (!editing || !editRef.current) return;
+    const el = editRef.current;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, [editing]);
+
+  function handleStart(e) {
+    e.stopPropagation();
+    setEditing(true);
+  }
+
+  function handleBlur() {
+    let raw = editRef.current?.innerText ?? '';
+    if (!multiline) raw = raw.trim();
+    else raw = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    onCommit?.(raw);
+    setEditing(false);
+  }
+
+  function handleKeyDown(e) {
+    e.stopPropagation();
+    if (e.key === 'Enter' && (!multiline || !e.shiftKey)) {
+      e.preventDefault();
+      editRef.current?.blur();
+    }
+  }
+
+  if (editing) {
+    return (
+      <Tag className={`${className} preview-field-editing`}>
+        <span
+          ref={editRef}
+          className="preview-editable-inner"
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          onClick={(ev) => ev.stopPropagation()}
+          style={{
+            outline: 'none',
+            display: 'block',
+            minWidth: '1ch',
+            whiteSpace: multiline ? 'pre-wrap' : 'normal',
+          }}
+        >
+          {value}
+        </span>
+      </Tag>
+    );
+  }
+
+  return (
+    <Tag
+      className={className}
+      onClick={handleStart}
+      style={{ cursor: 'text' }}
+      title="Tap to edit"
+    >
+      {value || '\u00a0'}
+    </Tag>
+  );
+}
+
 export default function PreviewView({
   title, body, photo, aiResponses, isLoading, aiError,
   redactMode, redactions, onRedact, onUnredact,
+  onTitleChange, onBodyChange, onLatestAiChange,
 }) {
   const latestResponse = aiResponses[aiResponses.length - 1];
   const latestResponseIdx = aiResponses.length - 1;
+  const allowEdit = aiResponses.length > 0 && !redactMode;
+
+  function commitAiParagraph(displayIdx, newText) {
+    const chunks = (latestResponse ?? '').split('\n');
+    const nonEmptyLineIndices = chunks
+      .map((c, i) => (c.length > 0 ? i : -1))
+      .filter((i) => i >= 0);
+    const lineIndex = nonEmptyLineIndices[displayIdx];
+    if (lineIndex === undefined) {
+      onLatestAiChange?.(newText);
+      return;
+    }
+    const next = [...chunks];
+    next[lineIndex] = newText;
+    onLatestAiChange?.(next.join('\n'));
+  }
 
   function handlePointerUp() {
     if (!redactMode) return;
@@ -192,7 +284,7 @@ export default function PreviewView({
     >
       {redactMode && (
         <div className="redact-banner no-screenshot">
-          <span className="redact-banner-icon">▮</span>
+          <span className="redact-banner-icon">&#9646;</span>
           Select text to redact &mdash; tap redacted text to remove
         </div>
       )}
@@ -200,37 +292,80 @@ export default function PreviewView({
       {photo && <DraggablePhoto key={photo} src={photo} />}
 
       <div className="preview-content">
-        {title && (
+        {allowEdit ? (
           <>
-            <h2 className="preview-title" data-field-id="title">
-              {renderWithRedactions(title, 'title', redactions, onUnredact, redactMode)}
-            </h2>
-            <hr className="preview-divider" />
+            {title ? (
+              <>
+                <ClickToEditText
+                  tag="h2"
+                  className="preview-title"
+                  value={title}
+                  onCommit={onTitleChange}
+                  multiline={false}
+                />
+                <hr className="preview-divider" />
+              </>
+            ) : null}
+            <ClickToEditText
+              tag="p"
+              className="preview-body"
+              value={body}
+              onCommit={onBodyChange}
+              multiline
+            />
+            <div className="preview-ai-block">
+              {aiError ? (
+                <p className="preview-ai preview-ai-error">{aiError}</p>
+              ) : latestResponse ? (
+                latestResponse.split('\n').filter(Boolean).map((para, pIdx) => (
+                  <ClickToEditText
+                    key={`ai-edit-${latestResponseIdx}-${pIdx}`}
+                    tag="p"
+                    className="preview-ai"
+                    value={para}
+                    onCommit={(t) => commitAiParagraph(pIdx, t)}
+                    multiline={false}
+                  />
+                ))
+              ) : null}
+              {isLoading && <TypingIndicator />}
+            </div>
+          </>
+        ) : (
+          <>
+            {title && (
+              <>
+                <h2 className="preview-title" data-field-id="title">
+                  {renderWithRedactions(title, 'title', redactions, onUnredact, redactMode)}
+                </h2>
+                <hr className="preview-divider" />
+              </>
+            )}
+
+            {body && (
+              <p className="preview-body" data-field-id="body">
+                {renderWithRedactions(body, 'body', redactions, onUnredact, redactMode)}
+              </p>
+            )}
+
+            <div className="preview-ai-block" key={aiResponses.length}>
+              {aiError ? (
+                <p className="preview-ai preview-ai-error">{aiError}</p>
+              ) : latestResponse ? (
+                latestResponse.split('\n').filter(Boolean).map((para, pIdx) => {
+                  const fieldId = `ai-${latestResponseIdx}-${pIdx}`;
+                  return (
+                    <p className="preview-ai" key={fieldId} data-field-id={fieldId}>
+                      {renderWithRedactions(para, fieldId, redactions, onUnredact, redactMode)}
+                    </p>
+                  );
+                })
+              ) : null}
+
+              {isLoading && <TypingIndicator />}
+            </div>
           </>
         )}
-
-        {body && (
-          <p className="preview-body" data-field-id="body">
-            {renderWithRedactions(body, 'body', redactions, onUnredact, redactMode)}
-          </p>
-        )}
-
-        <div className="preview-ai-block" key={aiResponses.length}>
-          {aiError ? (
-            <p className="preview-ai preview-ai-error">{aiError}</p>
-          ) : latestResponse ? (
-            latestResponse.split('\n').filter(Boolean).map((para, pIdx) => {
-              const fieldId = `ai-${latestResponseIdx}-${pIdx}`;
-              return (
-                <p className="preview-ai" key={fieldId} data-field-id={fieldId}>
-                  {renderWithRedactions(para, fieldId, redactions, onUnredact, redactMode)}
-                </p>
-              );
-            })
-          ) : null}
-
-          {isLoading && <TypingIndicator />}
-        </div>
       </div>
     </div>
   );

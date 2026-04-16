@@ -8,32 +8,8 @@ import ApiKeyModal from './components/ApiKeyModal';
 import { Button } from './components/ui/button';
 import { generateEntrySuggestions } from './lib/entryGenApi';
 import { getOpenRouterApiKey } from './lib/openrouterKey';
-import {
-  DEFAULT_IMAGE1_OVERLAY,
-  DEFAULT_IMAGE2_OVERLAY,
-  DEFAULT_IMAGE3_OVERLAY,
-  DEFAULT_IMAGE1_SUBJECT,
-  DEFAULT_IMAGE1_HAIR,
-  DEFAULT_IMAGE1_OUTFIT,
-  DEFAULT_IMAGE1_SETTING,
-  DEFAULT_IMAGE1_LIGHTING,
-  DEFAULT_IMAGE1_CAMERA,
-  DEFAULT_IMAGE1_EXTRAS,
-  DEFAULT_IMAGE1_STATIC_STYLE,
-  DEFAULT_IMAGE2_SETTING,
-  DEFAULT_IMAGE2_MOOD,
-  DEFAULT_IMAGE2_OUTFIT,
-  DEFAULT_IMAGE2_LIGHTING,
-  DEFAULT_IMAGE2_STATIC_STYLE,
-  DEFAULT_IMAGE3_SETTING,
-  DEFAULT_IMAGE3_OUTFIT,
-  DEFAULT_IMAGE3_MOOD,
-  DEFAULT_IMAGE3_LIGHTING,
-  DEFAULT_IMAGE3_STATIC_STYLE,
-  generateImage1Prompt,
-  generateImage2Prompt,
-  generateImage3Prompt,
-} from './lib/promptGen';
+import { generateImage1Prompt, generateImage2Prompt, generateImage3Prompt } from './lib/promptGen';
+import { getFreshDefaultPromptState } from './lib/promptDefaults';
 import entriesLogo from './assets/entries-logo.png';
 import './App.css';
 
@@ -43,6 +19,8 @@ const LS_IMG2_CONFIG = 'cf_img2Config';
 const LS_IMG2_OVERLAY = 'cf_img2Overlay';
 const LS_IMG3_CONFIG = 'cf_img3Config';
 const LS_IMG3_OVERLAY = 'cf_img3Overlay';
+const LS_TEXT_PROMPT_CONFIG = 'cf_textPromptConfig';
+const LS_ENTRY_PROMPT_CONFIG = 'cf_entryPromptConfig';
 
 function loadFromStorage(key, fallback) {
   try {
@@ -71,48 +49,36 @@ async function urlToBlob(url) {
 export default function App() {
   // ── Image 1 config (breakup / day 1) ─────────────────────────
   const [img1Config, setImg1Config] = useState(() =>
-    loadFromStorage(LS_IMG1_CONFIG, () => ({
-      staticStyle: DEFAULT_IMAGE1_STATIC_STYLE,
-      subject: [...DEFAULT_IMAGE1_SUBJECT],
-      hair: [...DEFAULT_IMAGE1_HAIR],
-      outfit: [...DEFAULT_IMAGE1_OUTFIT],
-      setting: [...DEFAULT_IMAGE1_SETTING],
-      lighting: [...DEFAULT_IMAGE1_LIGHTING],
-      camera: [...DEFAULT_IMAGE1_CAMERA],
-      extras: [...DEFAULT_IMAGE1_EXTRAS],
-    }))
+    loadFromStorage(LS_IMG1_CONFIG, () => getFreshDefaultPromptState().img1Config)
   );
   const [img1Overlay, setImg1Overlay] = useState(() =>
-    loadFromStorage(LS_IMG1_OVERLAY, DEFAULT_IMAGE1_OVERLAY)
+    loadFromStorage(LS_IMG1_OVERLAY, () => getFreshDefaultPromptState().img1Overlay)
   );
 
   // ── Image 2 config (slightly better / day 7) ─────────────────
   const [img2Config, setImg2Config] = useState(() =>
-    loadFromStorage(LS_IMG2_CONFIG, () => ({
-      staticStyle: DEFAULT_IMAGE2_STATIC_STYLE,
-      setting: [...DEFAULT_IMAGE2_SETTING],
-      mood: [...DEFAULT_IMAGE2_MOOD],
-      outfit: [...DEFAULT_IMAGE2_OUTFIT],
-      lighting: [...DEFAULT_IMAGE2_LIGHTING],
-    }))
+    loadFromStorage(LS_IMG2_CONFIG, () => getFreshDefaultPromptState().img2Config)
   );
   const [img2Overlay, setImg2Overlay] = useState(() =>
-    loadFromStorage(LS_IMG2_OVERLAY, DEFAULT_IMAGE2_OVERLAY)
+    loadFromStorage(LS_IMG2_OVERLAY, () => getFreshDefaultPromptState().img2Overlay)
   );
 
   // ── Image 3 config (glow up / day 100) ───────────────────────
   const [img3Config, setImg3Config] = useState(() =>
-    loadFromStorage(LS_IMG3_CONFIG, () => ({
-      staticStyle: DEFAULT_IMAGE3_STATIC_STYLE,
-      setting: [...DEFAULT_IMAGE3_SETTING],
-      outfit: [...DEFAULT_IMAGE3_OUTFIT],
-      mood: [...DEFAULT_IMAGE3_MOOD],
-      lighting: [...DEFAULT_IMAGE3_LIGHTING],
-    }))
+    loadFromStorage(LS_IMG3_CONFIG, () => getFreshDefaultPromptState().img3Config)
   );
   const [img3Overlay, setImg3Overlay] = useState(() =>
-    loadFromStorage(LS_IMG3_OVERLAY, DEFAULT_IMAGE3_OVERLAY)
+    loadFromStorage(LS_IMG3_OVERLAY, () => getFreshDefaultPromptState().img3Overlay)
   );
+
+  const [textPromptConfig, setTextPromptConfig] = useState(() =>
+    loadFromStorage(LS_TEXT_PROMPT_CONFIG, () => getFreshDefaultPromptState().textPromptConfig)
+  );
+  const [entryPromptConfig, setEntryPromptConfig] = useState(() => {
+    const v = loadFromStorage(LS_ENTRY_PROMPT_CONFIG, null);
+    if (v && typeof v.systemPrompt === 'string') return v;
+    return getFreshDefaultPromptState().entryPromptConfig;
+  });
 
   // Persist to localStorage
   useEffect(() => { localStorage.setItem(LS_IMG1_CONFIG, JSON.stringify(img1Config)); }, [img1Config]);
@@ -121,6 +87,8 @@ export default function App() {
   useEffect(() => { localStorage.setItem(LS_IMG2_OVERLAY, JSON.stringify(img2Overlay)); }, [img2Overlay]);
   useEffect(() => { localStorage.setItem(LS_IMG3_CONFIG, JSON.stringify(img3Config)); }, [img3Config]);
   useEffect(() => { localStorage.setItem(LS_IMG3_OVERLAY, JSON.stringify(img3Overlay)); }, [img3Overlay]);
+  useEffect(() => { localStorage.setItem(LS_TEXT_PROMPT_CONFIG, JSON.stringify(textPromptConfig)); }, [textPromptConfig]);
+  useEffect(() => { localStorage.setItem(LS_ENTRY_PROMPT_CONFIG, JSON.stringify(entryPromptConfig)); }, [entryPromptConfig]);
 
   const [editPromptsOpen, setEditPromptsOpen] = useState(false);
   const [editPromptsTab, setEditPromptsTab] = useState('image1');
@@ -156,7 +124,18 @@ export default function App() {
 
   // ── Handlers ──────────────────────────────────────────────────
 
+  const day1ChangeConfirmMsg =
+    'Choosing a different Day 1 image will regenerate Day 7 and Day 100 and clear your selections and entry progress below. Continue?';
+
   function handleImg1Select(url, index) {
+    if (url === selectedImg1Url && index === selectedImg1Index) return;
+    if (
+      selectedImg1Url != null &&
+      (url !== selectedImg1Url || index !== selectedImg1Index) &&
+      !window.confirm(day1ChangeConfirmMsg)
+    ) {
+      return;
+    }
     setSelectedImg1Url(url);
     setSelectedImg1Index(index);
     // Reset downstream selections when row 1 changes
@@ -187,7 +166,9 @@ export default function App() {
 
     setIsSuggestionsLoading(true);
     try {
-      const suggestions = await generateEntrySuggestions();
+      const suggestions = await generateEntrySuggestions({
+        systemPrompt: entryPromptConfig.systemPrompt,
+      });
       setEntrySuggestions(suggestions);
     } catch (err) {
       setSuggestionsError(err.message || 'Could not generate entry suggestions.');
@@ -199,6 +180,34 @@ export default function App() {
   function openEditPrompts(tab) {
     setEditPromptsTab(tab);
     setEditPromptsOpen(true);
+  }
+
+  function applyPromptPack(data) {
+    setImg1Config(data.img1Config);
+    setImg1Overlay(data.img1Overlay);
+    if (data.img2Config !== undefined) {
+      setImg2Config(data.img2Config);
+      setImg2Overlay(data.img2Overlay);
+      setImg3Config(data.img3Config);
+      setImg3Overlay(data.img3Overlay);
+    }
+    setTextPromptConfig(data.textPromptConfig);
+    if (data.entryPromptConfig) {
+      setEntryPromptConfig(data.entryPromptConfig);
+    }
+  }
+
+  function resetAllPromptsToDefaults() {
+    if (!window.confirm('Reset all prompts to defaults? Your current edits will be replaced.')) return;
+    const d = getFreshDefaultPromptState();
+    setImg1Config(d.img1Config);
+    setImg1Overlay(d.img1Overlay);
+    setImg2Config(d.img2Config);
+    setImg2Overlay(d.img2Overlay);
+    setImg3Config(d.img3Config);
+    setImg3Overlay(d.img3Overlay);
+    setTextPromptConfig(d.textPromptConfig);
+    setEntryPromptConfig(d.entryPromptConfig);
   }
 
   function regenerateRow1() {
@@ -502,6 +511,12 @@ export default function App() {
         setImg3Config={setImg3Config}
         img3Overlay={img3Overlay}
         setImg3Overlay={setImg3Overlay}
+        textPromptConfig={textPromptConfig}
+        setTextPromptConfig={setTextPromptConfig}
+        entryPromptConfig={entryPromptConfig}
+        setEntryPromptConfig={setEntryPromptConfig}
+        onApplyPromptPack={applyPromptPack}
+        onResetAllPrompts={resetAllPromptsToDefaults}
       />
 
       <ApiKeyModal open={apiKeyOpen} onClose={() => setApiKeyOpen(false)} />

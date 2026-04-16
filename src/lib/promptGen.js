@@ -1,152 +1,49 @@
+import defaultCarouselImagePrompts from '../data/defaultCarouselImagePrompts.json';
+
 function pick(arr) {
+  if (!arr || arr.length === 0) return '';
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ── Image 1 defaults (Day 1: breakup) ────────────────────────────
+const img1 = defaultCarouselImagePrompts.image1.config;
+const img2 = defaultCarouselImagePrompts.image2.config;
+const img3 = defaultCarouselImagePrompts.image3.config;
 
-export const DEFAULT_IMAGE1_OVERLAY = 'Day 1';
+// ── Image 1 defaults (Day 1) — from defaultCarouselImagePrompts.json ──
 
-export const DEFAULT_IMAGE1_STATIC_STYLE =
-  'dark hair, sexy neutral expression, not smiling, lips slightly parted, ' +
-  'black or dark clothing showing some cleavage, ' +
-  'front camera selfie, very close crop on face and chest, ' +
-  'night time, warm dim indoor light, ' +
-  'realistic iphone photo, slightly grainy, no retouching, natural skin';
+export const DEFAULT_IMAGE1_OVERLAY = defaultCarouselImagePrompts.image1.overlay;
 
-export const DEFAULT_IMAGE1_SUBJECT = [
-  'attractive young woman in her early 20s',
-  'young brunette woman with sharp features',
-  'confident young woman',
-  'striking young woman in her 20s',
-];
+export const DEFAULT_IMAGE1_STATIC_STYLE = img1.staticStyle;
 
-export const DEFAULT_IMAGE1_HAIR = [
-  'long dark brown hair spread out',
-  'voluminous wavy dark hair',
-  'straight dark hair loosely framing face',
-  'tousled dark brunette hair, slightly messy',
-];
+export const DEFAULT_IMAGE1_SUBJECT = [...img1.subject];
+export const DEFAULT_IMAGE1_HAIR = [...img1.hair];
+export const DEFAULT_IMAGE1_OUTFIT = [...img1.outfit];
+export const DEFAULT_IMAGE1_SETTING = [...img1.setting];
+export const DEFAULT_IMAGE1_LIGHTING = [...img1.lighting];
+export const DEFAULT_IMAGE1_CAMERA = [...img1.camera];
+export const DEFAULT_IMAGE1_EXTRAS = [...img1.extras];
 
-export const DEFAULT_IMAGE1_OUTFIT = [
-  'black corset top',
-  'black bralette, straps visible',
-  'tight black low-cut top',
-  'black bodysuit with thin straps, showing off some cleavage',
-  'black crop top, slightly off shoulder',
-];
+// ── Image 2 defaults (Day 7) ─────────────────────────────────────
 
-export const DEFAULT_IMAGE1_SETTING = [
-  'lying in bed at night, rumpled sheets, dim warm lamp glow',
-  'in the passenger seat of a car at night, window behind',
-  'in the back seat of a car at night, window behind',
-  'lying back on a bed, phone held above, looking up into camera',
-  'in a dimly lit bedroom, lying sideways on pillow',
-  'in the back seat of a car at night, city lights softly blurred outside',
-];
+export const DEFAULT_IMAGE2_OVERLAY = defaultCarouselImagePrompts.image2.overlay;
 
-export const DEFAULT_IMAGE1_LIGHTING = [
-  'warm dim bedside lamp, soft shadows',
-  'low warm ambient light, slightly underexposed',
-  'dim yellow room light, natural night feel',
-  'soft warm glow from off-screen lamp, mostly dark background',
-];
+export const DEFAULT_IMAGE2_STATIC_STYLE = img2.staticStyle;
 
-export const DEFAULT_IMAGE1_CAMERA = [
-  'selfie held above looking down, slightly tilted',
-  'front camera selfie, very close, candid',
-  'selfie angle from slightly above, face and chest filling frame',
-  'close front camera crop, slightly grainy, spontaneous',
-];
+export const DEFAULT_IMAGE2_SETTING = [...img2.setting];
+export const DEFAULT_IMAGE2_MOOD = [...img2.mood];
+export const DEFAULT_IMAGE2_OUTFIT = [...img2.outfit];
+export const DEFAULT_IMAGE2_LIGHTING = [...img2.lighting];
 
-export const DEFAULT_IMAGE1_EXTRAS = [
-  'glossy nude lip, heavy lashes, dewy skin',
-  'smoky eye, glossy lip',
-  'minimal makeup, glossy lip, looking directly into lens',
-  'heavy lashes, matte skin',
-];
+// ── Image 3 defaults (Day 100) ───────────────────────────────────
 
-// ── Image 2 defaults (Day 7: slightly better) ────────────────────
+export const DEFAULT_IMAGE3_OVERLAY = defaultCarouselImagePrompts.image3.overlay;
 
-export const DEFAULT_IMAGE2_OVERLAY = 'Day 7';
+export const DEFAULT_IMAGE3_STATIC_STYLE = img3.staticStyle;
 
-export const DEFAULT_IMAGE2_STATIC_STYLE =
-  'same woman from the reference photo, slightly more put-together, ' +
-  'neutral expression with a hint of calm, not smiling, ' +
-  'realistic iphone photo, slightly grainy, no retouching, natural skin, ' +
-  'front camera selfie, close crop on face and chest, vertical 9:16';
-
-export const DEFAULT_IMAGE2_SETTING = [
-  'sitting by a window in the morning, soft natural light coming in',
-  'on a couch with a blanket, cup of coffee in hand, daytime',
-  'standing in front of a bathroom mirror, morning light',
-  'sitting in a café alone, window light on face',
-  'leaning against a doorframe at home, warm afternoon light',
-];
-
-export const DEFAULT_IMAGE2_MOOD = [
-  'still fragile but starting to pull herself together',
-  'quietly healing, calm but guarded',
-  'slightly better, a flicker of life returning',
-  'pensive but no longer crying, soft determination',
-  'the first day she felt okay waking up',
-];
-
-export const DEFAULT_IMAGE2_OUTFIT = [
-  'oversized grey hoodie, hair loosely tied back',
-  'simple white t-shirt, hair down, minimal effort',
-  'cozy knit sweater, comfortable but cleaner',
-  'casual denim jacket over a plain top',
-  'soft cardigan, understated but presentable',
-];
-
-export const DEFAULT_IMAGE2_LIGHTING = [
-  'soft morning window light, gentle and warm',
-  'natural daylight, slightly overcast feel',
-  'warm golden afternoon light filtering in',
-  'even indoor lighting, daytime ambiance',
-];
-
-// ── Image 3 defaults (Day 100: glow up) ──────────────────────────
-
-export const DEFAULT_IMAGE3_OVERLAY = 'Day 100';
-
-export const DEFAULT_IMAGE3_STATIC_STYLE =
-  'same woman from the reference photo but fully glowed up, ' +
-  'confident radiant expression, slight smirk or soft smile, ' +
-  'glamorous but natural, perfect lighting, ' +
-  'realistic iphone photo, high quality, vertical 9:16';
-
-export const DEFAULT_IMAGE3_SETTING = [
-  'rooftop bar at golden hour, city skyline blurred behind',
-  'getting ready in a well-lit vanity mirror, fairy lights',
-  'at a restaurant table, candlelight and bokeh, night out',
-  'walking down a city street at night, neon reflections',
-  'in the back of an uber, city lights streaking through window',
-  'at a club or lounge, moody coloured lighting',
-];
-
-export const DEFAULT_IMAGE3_OUTFIT = [
-  'sleek black dress, gold jewelry, hair styled',
-  'fitted red top, statement earrings, lips done',
-  'silk cami top, delicate necklace, hair voluminous and styled',
-  'off-shoulder bodycon dress, smoky eye, confident pose',
-  'leather jacket over a going-out top, effortlessly hot',
-];
-
-export const DEFAULT_IMAGE3_MOOD = [
-  'thriving, radiating confidence, completely over it',
-  'that girl energy, unbothered and glowing',
-  'main character moment, she won the breakup',
-  'confident and magnetic, like she forgot he existed',
-  'living her best life, zero regrets',
-];
-
-export const DEFAULT_IMAGE3_LIGHTING = [
-  'golden hour glow, warm and flattering',
-  'moody ambient lighting with warm highlights',
-  'soft ring-light effect, even and glowing',
-  'dramatic side lighting, editorial feel',
-];
+export const DEFAULT_IMAGE3_SETTING = [...img3.setting];
+export const DEFAULT_IMAGE3_OUTFIT = [...img3.outfit];
+export const DEFAULT_IMAGE3_MOOD = [...img3.mood];
+export const DEFAULT_IMAGE3_LIGHTING = [...img3.lighting];
 
 // ── Prompt builders ──────────────────────────────────────────────
 

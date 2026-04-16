@@ -1,0 +1,55 @@
+{
+  "image1": {
+    "config": {
+      "staticStyle": "Close up organic image selfie style shot on front facing camera. No cinematic effects, no background blur. American look, sexy neutral expression. No other people should be visible in the image, blonde",
+      "subject": [
+        "Beautiful young woman in her early 20s visibly upset, clean girl look, NYC/ London, posing artistically"
+      ],
+      "hair": [],
+      "outfit": [],
+      "setting": [
+        "laying in neat tidy bedroom, rumpled white sheets"
+      ],
+      "lighting": [],
+      "camera": [],
+      "extras": []
+    },
+    "overlay": "I thought I could never get over him"
+  },
+  "image2": {
+    "config": {
+      "staticStyle": "Close up organic image selfie style shot on front facing camera. No cinematic effects, no background blur. American look, sexy neutral expression. No other people should be visible in the image, blonde, silky smooth hair",
+      "setting": [
+        "outside walking"
+      ],
+      "mood": [
+        "composed and calm"
+      ],
+      "outfit": [
+        "clean casual clothes"
+      ],
+      "lighting": [
+        "soft natural daylight"
+      ]
+    },
+    "overlay": ""
+  },
+  "image3": {
+    "config": {
+      "staticStyle": "Close up organic image selfie style shot on front facing camera. No cinematic effects, no background blur. American look, sexy neutral expression. No other people should be visible in the image, blonde, silky smooth hair, clear, glassy, blemish free skin",
+      "setting": [
+        "happy, outside in the sun and in a garden with flowers wearing a nice dress"
+      ],
+      "outfit": [
+        "form-fitting sleek black outfit"
+      ],
+      "mood": [
+        "happy confident glowing"
+      ],
+      "lighting": [
+        "bright warm even lighting"
+      ]
+    },
+    "overlay": "day 100 no contact"
+  }
+}

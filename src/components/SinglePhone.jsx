@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { toPng } from 'html-to-image';
 import Header from './Header';
 import StatusBar from './StatusBar';
@@ -23,6 +23,15 @@ function mergeRanges(ranges) {
   return result;
 }
 
+function buildConversationText(title, body, aiResponses) {
+  const entryText = [title && `Title: ${title}`, body].filter(Boolean).join('\n');
+  let s = `User: ${entryText}`;
+  for (const r of aiResponses) {
+    s += `\n\nAssistant: ${r}`;
+  }
+  return s;
+}
+
 /**
  * A single interactive phone mockup with compose → preview flow.
  * @param {{ injectedPhoto: string|null, injectedTitle: string|null, injectedBody: string|null, onModeChange: function }} props
@@ -34,7 +43,6 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
   const [photo, setPhoto] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [aiResponses, setAiResponses] = useState([]);
-  const [conversationText, setConversationText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
   const [redactMode, setRedactMode] = useState(false);
@@ -75,13 +83,17 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
     if (injectedBody != null) setBody(injectedBody);
   }, [injectedBody]);
 
+  const conversationText = useMemo(
+    () => buildConversationText(title, body, aiResponses),
+    [title, body, aiResponses]
+  );
+
   const callAI = useCallback(async (text, imageDataUrl = null) => {
     setIsLoading(true);
     setAiError(null);
     try {
       const response = await getAIResponse(text, imageDataUrl);
       setAiResponses((prev) => [...prev, response]);
-      setConversationText(text + `\n\nAssistant: ${response}`);
     } catch (err) {
       setAiError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -93,7 +105,6 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
     const entryText = [title && `Title: ${title}`, body].filter(Boolean).join('\n');
     const initialText = `User: ${entryText}`;
     setAiResponses([]);
-    setConversationText(initialText);
     setAiError(null);
     setRedactions({});
     setRedactMode(false);
@@ -111,11 +122,19 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
     callAI(conversationText);
   }
 
+  function handleLatestAiChange(text) {
+    setAiResponses((prev) => {
+      if (!prev.length) return prev;
+      const next = [...prev];
+      next[next.length - 1] = text;
+      return next;
+    });
+  }
+
   function handleRegenerate() {
     const entryText = [title && `Title: ${title}`, body].filter(Boolean).join('\n');
     const initialText = `User: ${entryText}`;
     setAiResponses([]);
-    setConversationText(initialText);
     setAiError(null);
     setRedactions({});
     callAI(initialText, photo);
@@ -182,6 +201,9 @@ const SinglePhone = forwardRef(function SinglePhone({ injectedPhoto, injectedTit
                 redactions={redactions}
                 onRedact={handleRedact}
                 onUnredact={handleUnredact}
+                onTitleChange={setTitle}
+                onBodyChange={setBody}
+                onLatestAiChange={handleLatestAiChange}
               />
             )}
           </main>

@@ -36,7 +36,7 @@ const ENTRY_SUGGESTIONS_TOOL = {
   },
 };
 
-const SYSTEM_PROMPT = `You are helping generate journal entry suggestions for a journaling app called Entries.
+export const DEFAULT_ENTRY_SUGGESTIONS_SYSTEM_PROMPT = `You are helping generate journal entry suggestions for a journaling app called Entries.
 
 Write 3 different journal entry drafts from the perspective of a woman who went no contact with an ex and has been actively working on herself — hitting the gym, going to therapy, investing in friendships, picking up hobbies, sleeping better, doing the things she always put off. She just hit a personal milestone and it's making her reflect on how much her life has changed.
 
@@ -87,9 +87,10 @@ function pick(arr) {
 
 /**
  * Generates 3 journal entry suggestions about going no contact, self-improvement, and a personal milestone.
+ * @param {{ systemPrompt?: string }} [options]
  * @returns {Promise<Array<{title: string, body: string}>>}
  */
-export async function generateEntrySuggestions() {
+export async function generateEntrySuggestions({ systemPrompt } = {}) {
   const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
     throw new Error(OPENROUTER_KEY_MISSING_MSG);
@@ -97,6 +98,7 @@ export async function generateEntrySuggestions() {
 
   const milestone = pick(MILESTONES);
   const angle = pick(ANGLES);
+  const system = systemPrompt ?? DEFAULT_ENTRY_SUGGESTIONS_SYSTEM_PROMPT;
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -108,7 +110,7 @@ export async function generateEntrySuggestions() {
     body: JSON.stringify({
       model: MODEL,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: system },
         {
           role: 'user',
           content: `Generate 3 journal entry suggestions. Today's milestone: she ${milestone}. Make at least one entry lead with a ${angle} emotional angle.`,

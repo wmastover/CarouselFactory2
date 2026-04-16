@@ -233,6 +233,35 @@
   color: #1a1a1a;
   line-height: 1.6;
   margin-bottom: 20px;
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+/* contentEditable inner node — browsers default to system sans-serif otherwise */
+.preview-editable-inner {
+  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  width: 100%;
+  box-shadow: none;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Entries preview: tap-to-edit outline (matches iMessage bubble editing) */
+.preview-field-editing {
+  outline: 2px solid rgba(0, 122, 255, 0.35);
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 
 .preview-ai-block {
@@ -245,6 +274,7 @@
   line-height: 1.65;
   font-style: normal;
   margin-bottom: 16px;
+  font-family: 'Source Serif 4', Georgia, serif;
 }
 
 .preview-ai:last-of-type {
@@ -525,8 +555,8 @@
 .gen-card-clickable:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 0 0 1px rgba(0,0,0,0.1),
-    0 8px 32px rgba(0,0,0,0.2);
+    0 0 0 2.5px #3d5afe,
+    0 8px 32px rgba(61,90,254,0.18);
 }
 
 .gen-card-selected {
@@ -1356,6 +1386,7 @@
 
 .ep-tabs {
   display: flex;
+  flex-wrap: wrap;
   border-bottom: 1px solid #f0f0f0;
   flex-shrink: 0;
   padding: 0 22px;
@@ -1404,6 +1435,57 @@
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #999;
+}
+
+.ep-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ep-section-heading .ep-section-label {
+  margin-bottom: 0;
+}
+
+.ep-category-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ep-category-header .ep-category-label {
+  margin-bottom: 0;
+}
+
+.ep-reset-default-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 2px 0;
+  font-family: inherit;
+}
+
+.ep-reset-default-btn:hover {
+  color: #1a1a1a;
+}
+
+.ep-section-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #777;
+  margin: -12px 0 4px;
 }
 
 .ep-static-textarea {
@@ -1582,6 +1664,55 @@
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+}
+
+.ep-footer-with-transfer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.ep-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ep-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ep-transfer-btn {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.ep-transfer-btn:hover {
+  background: #f8f8f8;
+  border-color: #ccc;
+}
+
+.ep-import-input {
+  display: none;
+}
+
+.ep-import-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #b91c1c;
 }
 
 .ep-done-btn {
