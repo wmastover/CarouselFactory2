@@ -54,17 +54,16 @@ const IMAGE1_INSTRUCTION =
 
 const IMAGE2_INSTRUCTION =
   'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
-  'This is "Day 7" — the SAME woman from the reference photo, one week after a breakup. ' +
-  'She looks slightly better but still a bit fragile. ' +
-  'Match her face, hair color, and general appearance from the reference image exactly. ' +
-  'Follow the JSON scene specification below exactly.';
+  'The SAME woman as in the reference photo—match her face, hair color, and general appearance from the reference image exactly. ' +
+  'Follow the JSON scene specification below exactly—interpret setting, mood, outfit, lighting, and staticStyle as one unified photograph. ' +
+  'The photograph must contain no visible text, captions, watermarks, logos, or typography.';
 
 const IMAGE3_INSTRUCTION =
   'Generate one cohesive photorealistic image in vertical 9:16 framing. ' +
-  'This is "Day 100" — the SAME woman from the reference photo, fully glowed up after a breakup. ' +
-  'She is confident, radiant, and thriving. ' +
-  'Match her face and hair color from the reference image but everything else should be elevated. ' +
-  'Follow the JSON scene specification below exactly.';
+  'The SAME woman as in the reference photo—match her face and hair color from the reference. ' +
+  'The scene should feel confident, radiant, and elevated per the JSON fields below. ' +
+  'Follow the JSON scene specification below exactly. ' +
+  'The photograph must contain no visible text, captions, watermarks, logos, or typography.';
 
 function buildJsonBlock(instruction, scene) {
   const spec = { schemaVersion: 1, scene };
